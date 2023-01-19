@@ -41,18 +41,18 @@ while(1):
 #v2
 #Libraries
 import asyncio
+from datetime import datetime
 
 #functions
 async def fire(jetonIn,jetonOut,requiered_token,delay):
-	#starting the count down of the actor's period
+	#verifying if we have requiered conditions to fire the actor
 	if(jetonIn == requiered_token):
 		jetonIn -= jetonIn
 		jetonOut['base_frame'] += 1/10
 		jetonOut['search_frame'] += 9/10
+		print(str(datetime.now()))
+	#starting the count down of the actor's period
 	await asyncio.sleep(delay)
-	#verifying if we have requiered conditions to fire the actor
-	
-	
 
 async def main():
 	#variables
@@ -62,9 +62,10 @@ async def main():
 	jetonIn = 0
 	jetonOut = 0
 	requiered_token = 1
-	delay = 1/frequence
+	delay = round(1/frequence)
 
 	while(1):
 		task1 = asyncio.create_task(fire(jetonIn,jetonOut,requiered_token,delay))
 
 
+asyncio.run(main())

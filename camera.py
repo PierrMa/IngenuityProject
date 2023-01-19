@@ -44,28 +44,43 @@ import asyncio
 from datetime import datetime
 
 #functions
-async def fire(jetonIn,jetonOut,requiered_token,delay):
-	#verifying if we have requiered conditions to fire the actor
-	if(jetonIn == requiered_token):
-		jetonIn -= jetonIn
-		jetonOut['base_frame'] += 1/10
-		jetonOut['search_frame'] += 9/10
-		print(str(datetime.now()))
+async def fire(jetonIn,jetonOut,requiered_token,delay,flag):
 	#starting the count down of the actor's period
-	await asyncio.sleep(delay)
+	if(not flag):
+		await asyncio.sleep(delay)#
+		#verifying if we have requiered conditions to fire the actor
+		if(jetonIn == requiered_token):
+			jetonIn -= jetonIn
+			jetonOut['base_frame'] += 1/10
+			jetonOut['search_frame'] += 9/10
+			#print(str(datetime.now().second))
+	else:
+		flag = False
+		#print('première fois')
+		#verifying if we have requiered conditions to fire the actor
+		if(jetonIn == requiered_token):
+			jetonIn -= jetonIn
+			jetonOut['base_frame'] += 1/10
+			jetonOut['search_frame'] += 9/10
+			#print(str(datetime.now().second))
+	return flag
 
 async def main():
 	#variables
 	frequence = 30 #fire frequency of the actor (Hz)
 	entree = "mode_commander"
 	sortie = ["base_frame","search_frame"]
-	jetonIn = 0
-	jetonOut = 0
+	jetonIn = 1
+	jetonOut = {}
 	requiered_token = 1
 	delay = round(1/frequence)
+	first_fire = True #True means the function has never been fired
+
+	for i in range(len(sortie)):
+		jetonOut[sortie[i]] = 0
 
 	while(1):
-		task1 = asyncio.create_task(fire(jetonIn,jetonOut,requiered_token,delay))
-
+		task1 = asyncio.create_task(fire(jetonIn,jetonOut,requiered_token,delay,first_fire))
+		first_fire = await task1
 
 asyncio.run(main())

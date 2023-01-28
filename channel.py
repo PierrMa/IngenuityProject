@@ -30,16 +30,16 @@ class Channel:
         self.nextActor.produce()
         self.nextActor.consume()
     
-    def checkAvailability(self):
+    def checkTokens(self):
         """
             method to check if the number of required tokens is reached for each the previous channel
         """
-        isAvailable = True
+        isEnough = True #This flag become False if at list one channel reveiced by the actor to fire has not enough tokens to fire the actor
         try:#case where an actor receive multiple channels
             for i in self.nextActor.previousChannel:#on récupère le nombre de jetons requis pour l'activation
                 if(i.numOfCurrentTokens < i.requiredTokens):
-                    isAvailable = isAvailable and False
-            if(isAvailable):
+                    isEnough = isEnough and False
+            if(isEnough):
                 for i in self.nextActor.previousChannel:
                     if(i.numOfCurrentTokens >= i.requiredTokens):
                         i.fireNext()

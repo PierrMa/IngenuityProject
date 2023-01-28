@@ -1,6 +1,44 @@
+##########################################################################
+#                               Libraries
+##########################################################################
 from actor import Actor
 from channel import Channel
+import time
+import threading
 
+##########################################################################
+#                               Global variables
+##########################################################################
+first_fire = True #True means the function has never been fired
+
+##########################################################################
+#                               Functions
+##########################################################################
+def fireActorWithoutIncomingChannels(actor):
+    global first_fire 
+    #if the actor has to respect a firing frequency and if it is not the first firing (because no need to check frequency in that case)
+    if((actor.frequency>0) and (not first_fire)):
+        time.sleep(round((1/actor.frequency)*10,2)) #wait until it's time for the next firing
+        print("automatic firing for actors without previous channel")
+        actor.produce()
+    else:#if the actor doesn't have to respect a firing frequency or if it's the first firing
+        actor.produce()
+        first_fire = False
+
+def fireActorWithIncomingChannels(actor):
+    global first_fire 
+    #if the actor has to respect a firing frequency and if it is not the first firing (because no need to check frequency in that case)
+    if((actor.nextActor.frequency>0) and (not first_fire)):
+        time.sleep(round((1/actor.nextActor.frequency)*10,2)) #wait until it's time for the next firing
+        actor.checkTokens()
+    else:#if the actor doesn't have to respect a firing frequency
+        actor.checkTokens()
+        first_fire = False
+
+
+##########################################################################
+#                               Variables
+##########################################################################
 actors_list = []
 channel_list = []
 
@@ -28,13 +66,31 @@ a2.previousChannel = c2
 a3.previousChannel=[c1,c3]
 #print("A.consummedToken={}\nA.frequency={}\nA.nextChannel={}\nA.previousChannel={}\nA.producedToken={}\n".format(A.consummedToken,A.frequency,A.nextChannel,A.previousChannel,A.producedToken))
 
+#th1 = threading.Thread(target=fireActorWithoutIncomingChannels)
+#th2 = threading.Thread(target=fireActorWithIncomingChannels)
+thread1 = {}
+thread2 = {}
+cpt1 = 0
+cpt2 = 0
+##########################################################################
+#                               main program
+##########################################################################   
 for t in range(5):
     #each actor without previous channel is automatically fired
     for j in actors_list:
         if(not j.previousChannel):
-            print("automatic firing for actors without previous channel")
-            j.produce()
-    #check if the number of required tokens is reach on each channel
+            #fireActorWithoutIncomingChannels(j)
+            thread1[cpt1] = threading.Thread(target=fireActorWithoutIncomingChannels(j))
+            thread1[cpt1].start()
+            cpt1+=1     
+    #check if the number of required tokens is reach on each channel for actors with incoming channels
     for i in channel_list:
-        i.checkAvailability()
-    
+        #fireActorWithIncomingChannels(i)
+        thread2[cpt2] = threading.Thread(target=fireActorWithIncomingChannels(i))
+        thread2[cpt2].start()
+        cpt2+=1 
+
+for i in thread1:
+    i.join()
+for i in thread2:
+    i.join()

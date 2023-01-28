@@ -49,7 +49,7 @@ actors_list = []
 channel_list = []
 
 #actors
-a1 = Actor(m_name = 'A', m_consummedToken=0,m_producedToken=[3,2],m_frequency=0.5,m_nextChannel=None,m_previousChannel=None)
+a1 = Actor(m_name = 'A', m_consummedToken=0,m_producedToken=[3,2],m_frequency=0.05,m_nextChannel=None,m_previousChannel=None)
 #print("A.consummedToken={}\nA.frequency={}\nA.nextChannel={}\nA.previousChannel={}\nA.producedToken={}\n".format(A.consummedToken,A.frequency,A.nextChannel,A.previousChannel,A.producedToken))
 actors_list.append(a1)
 a2 = Actor(m_name = 'B',m_consummedToken=4,m_producedToken=3,m_frequency=0,m_nextChannel=None,m_previousChannel=None)
@@ -72,8 +72,6 @@ a2.previousChannel = c2
 a3.previousChannel=[c1,c3]
 #print("A.consummedToken={}\nA.frequency={}\nA.nextChannel={}\nA.previousChannel={}\nA.producedToken={}\n".format(A.consummedToken,A.frequency,A.nextChannel,A.previousChannel,A.producedToken))
 
-#th1 = threading.Thread(target=fireActorWithoutIncomingChannels)
-#th2 = threading.Thread(target=fireActorWithIncomingChannels)
 thread1 = {}
 thread2 = {}
 cpt1 = 0
@@ -85,18 +83,20 @@ for t in range(5):
     #each actor without previous channel is automatically fired
     for j in actors_list:
         if(not j.previousChannel):
-            fireActorWithoutIncomingChannels(j)
-            """thread1[cpt1] = threading.Thread(target=fireActorWithoutIncomingChannels(j))
+            #fireActorWithoutIncomingChannels(j)
+            thread1[cpt1] = threading.Thread(target=fireActorWithoutIncomingChannels(j))
             thread1[cpt1].start()
-            cpt1+=1"""     
+            cpt1+=1    
     #check if the number of required tokens is reach on each channel for actors with incoming channels
     for i in channel_list:
-        fireActorWithIncomingChannels(i)
-        """thread2[cpt2] = threading.Thread(target=fireActorWithIncomingChannels(i))
+        #fireActorWithIncomingChannels(i)
+        thread2[cpt2] = threading.Thread(target=fireActorWithIncomingChannels(i))
         thread2[cpt2].start()
-        cpt2+=1 """
-"""
+        cpt2+=1 
+
 for i in thread1:
-    i.join()
+    print("i=",i)
+    thread1[i].join()
 for i in thread2:
-    i.join()"""
+    print("j=",i)
+    thread2[i].join()

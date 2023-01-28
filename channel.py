@@ -1,3 +1,5 @@
+import time
+
 class Channel:
     """generic class for channels"""
     def __init__(self,m_name,m_divisor,m_numOfInitialTokens,m_requiredTokens,m_previousActor,m_nextActor):
@@ -22,15 +24,17 @@ class Channel:
         self.nextActor = m_nextActor
         self.numOfCurrentTokens = m_numOfInitialTokens
 
-    def fireNext(self):
+    def fireNext(self,t0):
         """
             method to fire the actor following the channel
         """
-        print("{} is firing".format(self.name))
+        t1=time.time()
+        delay = (t1-t0)*1000
+        print("{} is firing after {}ms".format(self.name,delay))
         self.nextActor.produce()
         self.nextActor.consume()
     
-    def checkTokens(self):
+    def checkTokens(self,t0):
         """
             method to check if the number of required tokens is reached for each the previous channel
         """
@@ -42,12 +46,12 @@ class Channel:
             if(isEnough):
                 for i in self.nextActor.previousChannel:
                     if(i.numOfCurrentTokens >= i.requiredTokens):
-                        i.fireNext()
+                        i.fireNext(t0)
                     else:
                         print("Not enough tokens on {}".format(i.name))
         except:
             if(self.numOfCurrentTokens >= self.requiredTokens):
-                self.fireNext() #the actor following the channel is fired
+                self.fireNext(t0) #the actor following the channel is fired
             else:
                 print("Not enough tokens on {}".format(self.name))
 

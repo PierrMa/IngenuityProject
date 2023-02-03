@@ -2,7 +2,7 @@ import time
 
 class Channel:
     """generic class for channels"""
-    def __init__(self,m_name,m_divisor,m_numOfInitialTokens,m_requiredTokens,m_previousActor,m_nextActor):
+    def __init__(self,m_name,m_requiredTokens,m_previousActor,m_nextActor,m_numOfInitialTokens=0,m_divisor=1):
         """
             Initialization function
             m_name : name of the channel

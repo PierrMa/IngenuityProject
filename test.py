@@ -58,7 +58,7 @@ myTimer = LogicTimer(m_tic=5)
 ##########################################################################
 #                               main program
 ##########################################################################  
-for t in range(12):
+for t in range(41):
     current_time = myTimer.get_current_time()
     print(current_time)
     for i in actors_list:

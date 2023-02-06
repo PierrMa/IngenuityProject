@@ -60,4 +60,4 @@ class LogicTimer:
             actor : actor to add to the list
         """
         self.list_of_task.append([time_of_execution,actor])
-        #print("passage dans wait, time of exexution = {} pour l'acteur {}".format(time_of_execution,actor.name))
+        print("passage dans wait, time of exexution = {} pour l'acteur {}".format(time_of_execution,actor.name))

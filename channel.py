@@ -38,16 +38,22 @@ class Channel:
         """
         isEnough = True #This flag become False if at list one channel reveiced by the actor to fire has not enough tokens to fire the actor
         try:#case where an actor receive multiple channels
+            print("essai")
             for i in self.nextActor.previousChannel:#on récupère le nombre de jetons requis pour l'activation
+                print("verif to fire",self.nextActor.name)
                 if(i.numOfCurrentTokens < i.requiredTokens):
                     isEnough = isEnough and False
+                    print("Not enough tokens on {}".format(i.name))
             if(isEnough):
-                for i in self.nextActor.previousChannel:
+                self.fireNext(t0)
+                """for i in self.nextActor.previousChannel:
+                    print("verif2 to fire",self.nextActor.name)
                     if(i.numOfCurrentTokens >= i.requiredTokens):
                         i.fireNext(t0)
                     else:
-                        print("Not enough tokens on {}".format(i.name))
+                        print("Not enough tokens on {}".format(i.name))"""
         except:
+            print('echec')
             if(self.numOfCurrentTokens >= self.requiredTokens):
                 self.fireNext(t0) #the actor following the channel is fired
             else:

@@ -28,9 +28,7 @@ class Channel:
         """
             method to fire the actor following the channel
         """
-        t1=time.time()
-        delay = (t1-t0)*1000
-        print("{} is firing after {}ms".format(self.name,delay))
+        print("{} is firing at {}ms".format(self.name,t0))
         self.nextActor.produce()
         self.nextActor.consume()
     

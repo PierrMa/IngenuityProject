@@ -25,7 +25,7 @@ class LogicTimer:
         """
         #chek if the list is empty
         if(len(self.list_of_task)==0):
-            exit
+            return
 
         task = np.array(self.list_of_task)
         i=0

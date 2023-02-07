@@ -58,6 +58,7 @@ myTimer = LogicTimer(m_tic=5)
 ##########################################################################
 #                               main program
 ##########################################################################  
+IsEnough = True #flag False if at least one of the following channels of an actor has not enough tokens to allow the next actor to fire
 for t in range(41):
     current_time = myTimer.get_current_time()
     print(current_time)
@@ -65,6 +66,16 @@ for t in range(41):
         if((i.frequency>0) and ((current_time/1000)%(1/i.frequency)==0)):
             myTimer.wait(current_time,i)
         elif (i.frequency==0):
-            myTimer.wait(current_time,i)
+            if(i.nextChannel != None):#if the actor has at least one following channel
+                try: #for actors with more than one following channel
+                    IsEnough = True
+                    for j in i.nextChannel:#check if all following channels have enough tokens to fire the next actors
+                        if(j.requiredTokens>j.numOfCurrentTokens):#if one channel has not reach yet the number of required tokens
+                            IsEnough = IsEnough and False
+                except:#if the actor has only one following channel
+                    if(i.nextChannel.requiredTokens>i.nextChannel.numOfCurrentTokens):
+                        IsEnough = IsEnough and False
+            if(not IsEnough):
+                myTimer.wait(current_time,i)
     myTimer.do_task(current_time)
     myTimer.run()

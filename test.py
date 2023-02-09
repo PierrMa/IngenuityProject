@@ -4,11 +4,38 @@
 from actor import Actor
 from channel import Channel
 from LogicTimer import LogicTimer
-
+import numpy as np
 ##########################################################################
 #                               Functions
 ##########################################################################
-
+def topologic_matrix(actor_list,channel_list):
+    """
+        fonction du process the topologic matrix of a graph
+        actor_list : the list of actors of the graph
+        channel_list : the list of channels of the graph
+    """
+    matrix = np.zeros([len(channel_list),len(actor_list)])
+    for i,channel in enumerate(channel_list):
+        for j,actor in enumerate(actor_list):
+            #explore previous channel(s)
+            if(actor.previousChannel!=None):
+                try:
+                    for k in actor.previousChannel:
+                        if(k==channel):
+                            matrix[i,j]+=-k.requiredTokens
+                except:
+                    if(actor.previousChannel==channel):
+                        matrix[i,j]+=-actor.consummedToken
+            #explore next channel(s)
+            if(actor.nextChannel!=None):
+                try:
+                    for k,next in enumerate(actor.nextChannel):
+                        if(next==channel):
+                            matrix[i,j]+=actor.producedToken[k]
+                except:
+                    if(actor.nextChannel==channel):
+                        matrix[i,j]+=actor.producedToken
+    return matrix
 
 ##########################################################################
 #                               Variables
@@ -58,6 +85,13 @@ myTimer = LogicTimer(m_tic=5)
 ##########################################################################
 #                               main program
 ##########################################################################  
+matrix = topologic_matrix(actors_list,channel_list)
+#print(matrix)
+"""matrix_mini = np.delete(matrix,4,0)
+print(matrix)
+solutions=[(x1,x2,x3,x4,x5) for x1 in range(1,20) for x2 in range(1,20) for x3 in range(1,20) for x4 in range(1,20) for x5 in range(1,20) if 3*x1-2*x3==0 and 2*x1-4*x2==0 and 3*x2-x3==0 and x3-2*x4==0 and x4-x5==0]
+print(solutions)"""
+
 IsEnough = True #flag False if at least one of the following channels of an actor has not enough tokens to allow the next actor to fire
 for t in range(41):
     current_time = myTimer.get_current_time()
@@ -75,7 +109,7 @@ for t in range(41):
                 except:#if the actor has only one following channel
                     if(i.nextChannel.requiredTokens>i.nextChannel.numOfCurrentTokens):
                         IsEnough = IsEnough and False
-            if(not IsEnough):
+            if(not IsEnough): #a not timed actor is fired only if at least one of its next channels has not yet reach the number of required tokens to fired the next actor
                 myTimer.wait(current_time,i)
     myTimer.do_task(current_time)
     myTimer.run()

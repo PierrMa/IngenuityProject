@@ -81,7 +81,7 @@ a4.nextChannel=[c6,c5]
 a5.previousChannel=c6
 #print("A.consummedToken={}\nA.frequency={}\nA.nextChannel={}\nA.previousChannel={}\nA.producedToken={}\n".format(A.consummedToken,A.frequency,A.nextChannel,A.previousChannel,A.producedToken))
 
-myTimer = LogicTimer(m_tic=5)
+myTimer = LogicTimer(m_tic=5, m_t0 = 0)
 ##########################################################################
 #                               main program
 ##########################################################################  
@@ -93,11 +93,11 @@ solutions=[(x1,x2,x3,x4,x5) for x1 in range(1,20) for x2 in range(1,20) for x3 i
 print(solutions)"""
 
 IsEnough = True #flag False if at least one of the following channels of an actor has not enough tokens to allow the next actor to fire
-for t in range(41):
+for t in range(61):
     current_time = myTimer.get_current_time()
-    print(current_time)
+    print("============================ T = {}ms ============================= ".format(current_time))
     for i in actors_list:
-        if((i.frequency>0) and ((current_time/1000)%(1/i.frequency)==0)):
+        if((i.frequency>0) and ((current_time)%(1000/i.frequency)==0)):
             myTimer.wait(current_time,i)
         elif (i.frequency==0):
             if(i.nextChannel != None):#if the actor has at least one following channel

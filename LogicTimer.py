@@ -26,14 +26,13 @@ class LogicTimer:
         #chek if the list is empty
         if(len(self.list_of_task)==0):
             return
-
+            
         task = np.array(self.list_of_task)
         i=0
-
-        while(task[len(task)-1-i][0]<=milestone):
+        while(task[len(task)-1-i][0]<=milestone and (len(task)-1-i>=0)):
             actor = task[len(task)-1-i][1]
             if(actor.previousChannel==None): #for actors without incoming channels
-                print("Activation de {} à {}ms".format(actor.name,self.__current_time))
+                print("Activation of {} at {}ms".format(actor.name,self.__current_time))
                 actor.produce()
             else:
                 try: #try to see if there are more than one previous channel
@@ -41,12 +40,8 @@ class LogicTimer:
                     actor.previousChannel[0].checkTokens(self.__current_time)
                 except:
                     actor.previousChannel.checkTokens(self.__current_time)
-            try:
-                self.list_of_task.pop() 
-                i+=1
-            except:
-                break #if the list is empty, get out of the loop
-
+            self.list_of_task.pop() 
+            i+=1
     def get_current_time(self):
         """
             method to return the current value of the logic timer
@@ -60,4 +55,4 @@ class LogicTimer:
             actor : actor to add to the list
         """
         self.list_of_task.append([time_of_execution,actor])
-        print("passage dans wait, time of exexution = {} pour l'acteur {}".format(time_of_execution,actor.name))
+        #print("passage dans wait, time of exexution = {} pour l'acteur {}".format(time_of_execution,actor.name))

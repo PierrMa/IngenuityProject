@@ -26,10 +26,10 @@ class Actor:
             try:
                 for i in range(len(self.nextChannel)):
                     self.nextChannel[i].numOfCurrentTokens +=  self.producedToken[i]
-                    print("current tokens on {} = {} (fired by {})".format(self.nextChannel[i].name,self.nextChannel[i].numOfCurrentTokens,self.name))
+                    print("current tokens on {} = {} (after {} firing)".format(self.nextChannel[i].name,self.nextChannel[i].numOfCurrentTokens,self.name))
             except:
                 self.nextChannel.numOfCurrentTokens +=  self.producedToken
-                print("current tokens on {} = {} (fired by {})".format(self.nextChannel.name,self.nextChannel.numOfCurrentTokens,self.name))
+                print("current tokens on {} = {} (after {} firing)".format(self.nextChannel.name,self.nextChannel.numOfCurrentTokens,self.name))
         
     def consume(self):
         """
@@ -39,8 +39,8 @@ class Actor:
             try:
                 for i in range(len(self.previousChannel)):
                     self.previousChannel[i].numOfCurrentTokens -= self.consummedToken[i]
-                    print("current tokens on {}={} (fired by {})".format(self.previousChannel[i].name,self.previousChannel[i].numOfCurrentTokens,self.name))
+                    print("current tokens on {}={} (after {} firing)".format(self.previousChannel[i].name,self.previousChannel[i].numOfCurrentTokens,self.name))
                     
             except:
                 self.previousChannel.numOfCurrentTokens -= self.consummedToken
-                print("current tokens on {}={} (fired by {})".format(self.previousChannel.name,self.previousChannel.numOfCurrentTokens,self.name))
+                print("current tokens on {}={} (after {} firing)".format(self.previousChannel.name,self.previousChannel.numOfCurrentTokens,self.name))

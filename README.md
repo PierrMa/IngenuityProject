@@ -11,6 +11,14 @@ Notes meeting 1:
 -Précision au niveau du graphe : les numéro entre crochets représentent le nombre de jetons initial
 -Ne pas tout mettre au niveau des acteurs: dans ce cas utiliser une méthode production et consommation pour les canaux
 
+Notes meeting 2: 
+-au niveau du constructeur de Channel, donner une valeur par défaut =1 à diviseur 
+-implémenter une classe pour gérer le temps de façon logique et ensuite vérifier la consistance du modèle 
+-cela fait que l'utilisation des thread devient inutile 
+-chaque événement doit se produire à un tic de l'horloge logique 
+-cette horloge logique ne respecte pas forcément le temps réel, c'est nous qui définissons la durée que représente un tic d'horloge logique 
+-si l'horloge logique tombe sur un wait, on l'incrémente du temps d'attente nécessaire et on lui dit ce qui devra se passer après cet incrément (concrètement, on met dans une liste ordonnée sur le temps, le temps d'exécution et l'acteur qui doit s'exécuter ex:[(50,A),(100,C),(120,B)])
+
 Résumé meeting 3:
 Tâches à faire pour la prochaine fois:
 -implémenter une fonction de calcul du vecteur de répétition (https://docs.sympy.org/latest/tutorials/intro-tutorial/matrices.html https://www.geeksforgeeks.org/python-sympy-matrix-nullspace-method/ https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.null_space.html)

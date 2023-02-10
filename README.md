@@ -10,3 +10,16 @@ Notes meeting 1:
 -Réprésenter le graphe uniquement par des acteurs et des noeuds. Pas besoin d'utiliser des listes chaînées
 -Précision au niveau du graphe : les numéro entre crochets représentent le nombre de jetons initial
 -Ne pas tout mettre au niveau des acteurs: dans ce cas utiliser une méthode production et consommation pour les canaux
+
+Résumé meeting 3:
+Tâches à faire pour la prochaine fois:
+-implémenter une fonction de calcul du vecteur de répétition (https://docs.sympy.org/latest/tutorials/intro-tutorial/matrices.html https://www.geeksforgeeks.org/python-sympy-matrix-nullspace-method/ https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.null_space.html)
+-vérifier que l'application du vecteur de répétition permet un retour à l'état initial (preuve de consistance)
+-vérifier que les acteurs timés s'exécutent bien à la bonne fréquence
+-créer une fonction permettant une vérification plus simple du respect de la fréquence d'exécution des acteurs (elle pourrait par exemple mettre fin à l'exécution après une itération complète du graphe)
+-Tester notre implémentation sur un autre schéma (une partie du graphe final par exemple)
+Remarques:
+-Il n'est pas indispensable de supprimer les lignes de 0 de la matrice de topologie. Leur présence est essentiel pour montrer l'absence de deadlocks.
+-Il est normal que les matrices topologiques soit singulières sinon cela traduit un problème
+-Il y a probablement des erreurs au niveau du schéma final donc il faut y penser si notre implémentation de fonctionne pas dessus ou aboutie à des deadlock
+-Au niveau des acteur avec des délais, la présence du délai traduit le fait que l'acteur doit pouvoir s'exécuter immédiatement après ce délai. Dans le schéma d'exemple, E devrait être en mesure de s'exécuter dès immédiatement après 50ms mais du fait de la fréquence imposé aux acteurs qui le précède, E ne peut s'exécuter qu'après 200ms. C'est don une erreur de spécification. La façon de la gérer est soit d'alléger la contrainte sur le délai, soit de mettre des jetons initiaux sur c6.

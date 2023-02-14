@@ -5,6 +5,8 @@ from actor import Actor
 from channel import Channel
 from LogicTimer import LogicTimer
 import numpy as np
+from sympy import *
+import math
 ##########################################################################
 #                               Functions
 ##########################################################################
@@ -36,6 +38,24 @@ def topologic_matrix(actor_list,channel_list):
                     if(actor.nextChannel==channel):
                         matrix[i,j]+=actor.producedToken
     return matrix
+
+def repeat_vector(matrix):
+    """
+        function to compute the repeat vector of a topologic matrix
+        matrix : the topologic matrix of which we have to compute the repeat vector
+    """
+    myVector = Matrix(matrix).nullspace()
+    myVector = np.array(myVector)
+    myVector = np.ndarray.flatten(myVector)
+    k = 0
+    areAllIntergers = False
+    while(areAllIntergers!=True):
+        areAllIntergers = True
+        k += 1
+        for i in myVector:
+            if (np.floor(i*k)!=np.ceil(i*k)): #check if all the number of the repat vector are integers
+                areAllIntergers = areAllIntergers and False  
+    return k*myVector
 
 ##########################################################################
 #                               Variables
@@ -86,14 +106,17 @@ myTimer = LogicTimer(m_tic=5, m_t0 = 0)
 #                               main program
 ##########################################################################  
 matrix = topologic_matrix(actors_list,channel_list)
-#print(matrix)
-"""matrix_mini = np.delete(matrix,4,0)
-print(matrix)
-solutions=[(x1,x2,x3,x4,x5) for x1 in range(1,20) for x2 in range(1,20) for x3 in range(1,20) for x4 in range(1,20) for x5 in range(1,20) if 3*x1-2*x3==0 and 2*x1-4*x2==0 and 3*x2-x3==0 and x3-2*x4==0 and x4-x5==0]
-print(solutions)"""
+print("matrix = ",matrix)
+#matrix_mini = np.delete(matrix,4,0)
+#print("matrix simplifiée= ",matrix_mini)
+#solutions=[(x1,x2,x3,x4,x5) for x1 in range(1,20) for x2 in range(1,20) for x3 in range(1,20) for x4 in range(1,20) for x5 in range(1,20) if 3*x1-2*x3==0 and 2*x1-4*x2==0 and 3*x2-x3==0 and x3-2*x4==0 and x4-x5==0]
+#print(solutions)
+myVector = repeat_vector(matrix)
+print(myVector)
 
+"""
 IsEnough = True #flag False if at least one of the following channels of an actor has not enough tokens to allow the next actor to fire
-for t in range(61):
+for t in range(121):
     current_time = myTimer.get_current_time()
     print("============================ T = {}ms ============================= ".format(current_time))
     for i in actors_list:
@@ -112,4 +135,4 @@ for t in range(61):
             if(not IsEnough): #a not timed actor is fired only if at least one of its next channels has not yet reach the number of required tokens to fired the next actor
                 myTimer.wait(current_time,i)
     myTimer.do_task(current_time)
-    myTimer.run()
+    myTimer.run()"""

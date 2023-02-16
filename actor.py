@@ -17,6 +17,9 @@ class Actor:
         self.frequency = m_frequency
         self.nextChannel = m_nextChannel
         self.previousChannel = m_previousChannel
+        self.numOfFirings = 0 #number of times the actor has been fired
+        self.datesOfFirings = [] #firing dates of the actor
+        self.numOfFiringsPerExecution = 0 #number of times the actor has been fired in a execution of a yhe graph. This variable is reset for each new execution of the graph
 
     def produce(self):
         """
@@ -26,10 +29,10 @@ class Actor:
             try:
                 for i in range(len(self.nextChannel)):
                     self.nextChannel[i].numOfCurrentTokens +=  self.producedToken[i]
-                    print("current tokens on {} = {} (after {} firing)".format(self.nextChannel[i].name,self.nextChannel[i].numOfCurrentTokens,self.name))
+                    #print("current tokens on {} = {} (after {} firing)".format(self.nextChannel[i].name,self.nextChannel[i].numOfCurrentTokens,self.name))
             except:
                 self.nextChannel.numOfCurrentTokens +=  self.producedToken
-                print("current tokens on {} = {} (after {} firing)".format(self.nextChannel.name,self.nextChannel.numOfCurrentTokens,self.name))
+                #print("current tokens on {} = {} (after {} firing)".format(self.nextChannel.name,self.nextChannel.numOfCurrentTokens,self.name))
         
     def consume(self):
         """
@@ -39,8 +42,12 @@ class Actor:
             try:
                 for i in range(len(self.previousChannel)):
                     self.previousChannel[i].numOfCurrentTokens -= self.consummedToken[i]
-                    print("current tokens on {}={} (after {} firing)".format(self.previousChannel[i].name,self.previousChannel[i].numOfCurrentTokens,self.name))
+                    #print("current tokens on {}={} (after {} firing)".format(self.previousChannel[i].name,self.previousChannel[i].numOfCurrentTokens,self.name))
                     
             except:
                 self.previousChannel.numOfCurrentTokens -= self.consummedToken
-                print("current tokens on {}={} (after {} firing)".format(self.previousChannel.name,self.previousChannel.numOfCurrentTokens,self.name))
+                #print("current tokens on {}={} (after {} firing)".format(self.previousChannel.name,self.previousChannel.numOfCurrentTokens,self.name))
+
+    def printStat(self):
+        print("==============================================================================")
+        print("{} has been activated {} times at the following dates : {}".format(self.name,self.numOfFirings,self.datesOfFirings))

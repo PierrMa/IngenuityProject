@@ -120,7 +120,7 @@ def implementationWithFiringFrequencyDeterminedDuringRuntime(myTimer,actors_list
     #print("============================ T = {}ms ============================= ".format(current_time))
     
     for i in actors_list:
-        if((i.frequency>0) and ((current_time)%(1000/i.frequency)==0)):#check if it is time to fired timed actors
+        if((i.frequency>0) and ((current_time)%(1000/i.frequency)==0) and (current_time!=0)):#check if it is time to fired timed actors
             myTimer.wait(current_time,i)
         elif (i.frequency==0):
             if(i.nextChannel != None):#if the actor has at least one following channel
@@ -149,7 +149,7 @@ def implementationWithFiringFrequencyDeterminedAtCompilerTime(myTimer,actors_lis
     #print("============================ T = {}ms ============================= ".format(current_time))
     
     for index,actor in enumerate(actors_list):
-        if((actor.frequency>0) and ((current_time)%(1000/actor.frequency)==0)): #check if it is time to fired timed actors
+        if((actor.frequency>0) and ((current_time)%(1000/actor.frequency)==0) and (current_time!=0)): #check if it is time to fired timed actors
             myTimer.wait(current_time,actor)
         elif (actor.frequency==0):
             if(actor.numOfFiringsPerExecution<repeatVector[index]): #check is the actor has already been fired enough to complete an execution of the graph
@@ -215,21 +215,22 @@ myTimer = LogicTimer(m_tic=5, m_t0 = 0)
 #                               main program
 ##########################################################################  
 topologicMatrix = processTopologicMatrix(actors_list,channel_list)
-#print("matrix = ",matrix)
-#matrix_mini = np.delete(matrix,4,0)
+#print("matrice topologique : \n",topologicMatrix)
+#matrix_mini = np.delete(topologicMatrix,4,0)
 #print("matrix simplifiée= ",matrix_mini)
 #solutions=[(x1,x2,x3,x4,x5) for x1 in range(1,20) for x2 in range(1,20) for x3 in range(1,20) for x4 in range(1,20) for x5 in range(1,20) if 3*x1-2*x3==0 and 2*x1-4*x2==0 and 3*x2-x3==0 and x3-2*x4==0 and x4-x5==0]
 #print(solutions)
 repeatVector = processRepeatVector(topologicMatrix)
-print(repeatVector)
+#print("vecteur de répétition :",repeatVector)
 
 
 IsEnough = True #flag False if at least one of the following channels of an actor has not enough tokens to allow the next actor to fire
-for t in range(241):
-    #Uncomment the function below to allow an implementation where firing frequency of not timed actor is determined during runtime
+for t in range(81):
+    # /!\ Beware, the 2 following functions can't be uncommented in the same time /!\ 
+    #Uncomment the function below to allow an implementation where firing frequency of not timed actors is determined during runtime
     #implementationWithFiringFrequencyDeterminedDuringRuntime(myTimer,actors_list)
     
-    #Uncomment the function below to allow an implementation where firing frequency of not timed actor is determined at compiler time
+    #Uncomment the function below to allow an implementation where firing frequency of not timed actors is determined at compiler time
     implementationWithFiringFrequencyDeterminedAtCompilerTime(myTimer,actors_list,repeatVector)
     
 

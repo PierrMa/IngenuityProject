@@ -46,18 +46,17 @@ class Channel:
                 if(i.numOfCurrentTokens < i.requiredTokens):
                     isEnough = isEnough and False
                     #print("Not enough tokens on {}".format(i.name))
+                    if(i.nextActor.frequency>0):
+                        print("{} can't respect its firing frequency at {}ms => livelyness not checked".format(i.nextActor.name,t0))
+                    
             if(isEnough):
                 self.fireNext(t0)
-                """for i in self.nextActor.previousChannel:
-                    print("verif2 to fire",self.nextActor.name)
-                    if(i.numOfCurrentTokens >= i.requiredTokens):
-                        i.fireNext(t0)
-                    else:
-                        print("Not enough tokens on {}".format(i.name))"""
         except:
             #print("check to fire",self.nextActor.name)
             if(self.numOfCurrentTokens >= self.requiredTokens):
                 self.fireNext(t0) #the actor following the channel is fired
-            #else:
+            else:
                 #print("Not enough tokens on {}".format(self.name))
+                if(self.nextActor.frequency>0):
+                    print("{} can't respect its firing frequency at {}ms => livelyness not checked".format(self.nextActor.name,t0))
 

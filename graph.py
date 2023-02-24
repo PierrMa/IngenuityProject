@@ -26,16 +26,16 @@ def processTopologicMatrix(actor_list,channel_list):
                             matrix[i,j]+=-k.requiredTokens
                 except:
                     if(actor.previousChannel==channel):
-                        matrix[i,j]+=-actor.consummedToken
+                        matrix[i,j]+=-actor.consummedToken/channel.divisor
             #explore next channel(s)
             if(actor.nextChannel!=None):
                 try:
                     for k,next in enumerate(actor.nextChannel):
                         if(next==channel):
-                            matrix[i,j]+=actor.producedToken[k]
+                            matrix[i,j]+=actor.producedToken[k]/channel.divisor
                 except:
                     if(actor.nextChannel==channel):
-                        matrix[i,j]+=actor.producedToken
+                        matrix[i,j]+=actor.producedToken/channel.divisor
     return matrix
 
 def processRepeatVector(matrix):
@@ -47,13 +47,13 @@ def processRepeatVector(matrix):
     myVector = np.array(myVector)
     myVector = np.ndarray.flatten(myVector)
     k = 0
-    areAllIntergers = False
-    while(areAllIntergers!=True):
-        areAllIntergers = True
+    areAllIntegers = False
+    while(areAllIntegers!=True):
+        areAllIntegers = True
         k += 1
         for i in myVector:
-            if ((i*k)!=int(i*k)): #check if all the number of the repat vector are integers
-                areAllIntergers = areAllIntergers and False  
+            if (round(i*k,6)!=int(i*k)): #check if all the number of the repat vector are integers
+                areAllIntegers = False
     for i in range(len(myVector)):
         myVector[i] = int(k*myVector[i])
     return myVector
@@ -82,7 +82,7 @@ def isExecutionCompleted(actors_list,repeatVector):
     #check if the number of firing for each actor is equal to the number of firing requiered to complete an execution of the graph
     for index, numOfFiring in enumerate(numOfFiringList):
         if(repeatVector[index]!=numOfFiring):
-            isTheSame = False
+            isTheSame = isTheSame and False
     return isTheSame
 
 def checkConsistancy(actors_list,repeatVector,channel_list):
@@ -100,7 +100,7 @@ def checkConsistancy(actors_list,repeatVector,channel_list):
     if(isCompleted):
         for i in channel_list:
             if(i.numOfInitialTokens!=i.numOfCurrentTokens):
-                weAreBack = weAreBack and False
+                weAreBack = False
     
     if((isCompleted) and (not weAreBack)):
         print("Consistency not checked!")
@@ -120,7 +120,7 @@ def implementationWithFiringFrequencyDeterminedDuringRuntime(myTimer,actors_list
     #print("============================ T = {}ms ============================= ".format(current_time))
     
     for i in actors_list:
-        if((i.frequency>0) and ((current_time)%(1000/i.frequency)==0) and (current_time!=0)):#check if it is time to fired timed actors
+        if((i.frequency>0) and ((current_time)%(1000/i.frequency)==0)):#check if it is time to fired timed actors
             myTimer.wait(current_time,i)
         elif (i.frequency==0):
             if(i.nextChannel != None):#if the actor has at least one following channel
@@ -128,10 +128,10 @@ def implementationWithFiringFrequencyDeterminedDuringRuntime(myTimer,actors_list
                     IsEnough = True
                     for j in i.nextChannel:#check if all following channels have enough tokens to fire the next actors
                         if(j.requiredTokens>j.numOfCurrentTokens):#if one channel has not reach yet the number of required tokens
-                            IsEnough = IsEnough and False
+                            IsEnough = False
                 except:#if the actor has only one following channel
                     if(i.nextChannel.requiredTokens>i.nextChannel.numOfCurrentTokens):
-                        IsEnough = IsEnough and False
+                        IsEnough = False
             if(not IsEnough): #a not timed actor is fired only if at least one of its next channels has not yet reach the number of required tokens to fired the next actor
                 myTimer.wait(current_time,i)
     myTimer.do_task(current_time)#fire the actors if it is possible
@@ -149,8 +149,9 @@ def implementationWithFiringFrequencyDeterminedAtCompilerTime(myTimer,actors_lis
     #print("============================ T = {}ms ============================= ".format(current_time))
     
     for index,actor in enumerate(actors_list):
-        if((actor.frequency>0) and ((current_time)%(1000/actor.frequency)==0)): #check if it is time to fired timed actors
-            myTimer.wait(current_time,actor)
+        if((actor.frequency>0) and ((current_time)%(1000/actor.frequency)==0) and (current_time!=0)): #check if it is time to fired timed actors
+            if(actor.delay>0 and (current_time>=actor.delay)):
+                myTimer.wait(current_time,actor)
         elif (actor.frequency==0):
             if(actor.numOfFiringsPerExecution<repeatVector[index]): #check is the actor has already been fired enough to complete an execution of the graph
                 myTimer.wait(current_time,actor)
@@ -172,43 +173,131 @@ def implementationWithFiringFrequencyDeterminedAtCompilerTime(myTimer,actors_lis
 actors_list = []
 channel_list = []
 
-#actors
-a1 = Actor(m_name = 'A', m_consummedToken=0,m_producedToken=[3,2],m_frequency=0,m_nextChannel=None,m_previousChannel=None)
-#print("A.consummedToken={}\nA.frequency={}\nA.nextChannel={}\nA.previousChannel={}\nA.producedToken={}\n".format(A.consummedToken,A.frequency,A.nextChannel,A.previousChannel,A.producedToken))
-actors_list.append(a1)
-a2 = Actor(m_name = 'B',m_consummedToken=4,m_producedToken=3,m_frequency=0,m_nextChannel=None,m_previousChannel=None)
-actors_list.append(a2)
-a3 = Actor(m_name = 'C',m_consummedToken=[2,1],m_producedToken=1,m_frequency=20,m_nextChannel=None,m_previousChannel=None)
-actors_list.append(a3)
-a4 = Actor(m_name = 'D',m_consummedToken=[2,1],m_producedToken=[1,1],m_frequency=0,m_nextChannel=None,m_previousChannel=None)
-actors_list.append(a4)
-a5 = Actor(m_name = 'E',m_consummedToken=1,m_producedToken=0,m_frequency=10,m_nextChannel=None,m_previousChannel=None)
-actors_list.append(a5)
+#definition des acteurs
+camera=Actor(m_name='Camera', m_consummedToken=20, m_producedToken=[1,4], m_frequency=25, m_nextChannel=None, m_previousChannel=None)
+actors_list.append(camera)
 
-#channels
-c1 = Channel(m_name = 'c1',m_divisor=1, m_numOfInitialTokens=0, m_requiredTokens=2, m_previousActor=a1, m_nextActor=a3)
+base_frame=Actor(m_name='base_frame',m_consummedToken=5,m_producedToken=1, m_frequency=0, m_nextChannel=None, m_previousChannel=None)
+actors_list.append(base_frame)
+
+search_frame=Actor(m_name='search_frame',m_consummedToken=5, m_producedToken=1, m_frequency=0,m_nextChannel=None, m_previousChannel=None)
+actors_list.append(search_frame)
+
+feature_detector_base_frame=Actor(m_name='feature_detector_base_frame',m_consummedToken=1, m_producedToken=1,m_frequency=0, m_nextChannel=None, m_previousChannel=None)
+actors_list.append(feature_detector_base_frame)
+
+feature_detector_search_frame=Actor(m_name='feature_detector_search_frame',m_consummedToken=1,m_producedToken=1,m_frequency=0,m_nextChannel=None,m_previousChannel=None)
+actors_list.append(feature_detector_search_frame)
+
+pseudo_landmarks=Actor(m_name='pseudo_landmarks',m_consummedToken=1,m_producedToken=4,m_frequency=0,m_nextChannel=None, m_previousChannel=None)
+actors_list.append(pseudo_landmarks)
+
+match_feature_landmarks=Actor(m_name='match_feature_landmarks', m_consummedToken=[1,1],m_producedToken=100,m_frequency=0,m_nextChannel=None,m_previousChannel=None)
+actors_list.append(match_feature_landmarks)
+
+extended_kalman_filter=Actor(m_name='extended_kalman_filter', m_consummedToken=[4,32,1], m_producedToken=1, m_frequency=500, m_nextChannel=None, m_previousChannel=None,m_delay=7.8)
+actors_list.append(extended_kalman_filter)
+
+imu_1=Actor(m_name='IMU_1', m_consummedToken=5, m_producedToken=[5,5], m_frequency=3200, m_nextChannel=None,m_previousChannel=None,m_delay=5.8)
+actors_list.append(imu_1)
+
+mode_commander=Actor(m_name='mode_commander', m_consummedToken=1, m_producedToken=[1,32,1], m_frequency=0, m_nextChannel=None, m_previousChannel=None)
+actors_list.append(mode_commander)
+
+LRF=Actor(m_name='LRF', m_consummedToken=10, m_producedToken=[10,10], m_frequency=50, m_nextChannel=None, m_previousChannel=None)
+actors_list.append(LRF)
+
+state_propagation=Actor(m_name='state_propagation', m_consummedToken=[1,32,1], m_producedToken=1, m_frequency=500,m_nextChannel=None,m_previousChannel=None,m_delay=8.8)
+actors_list.append(state_propagation)
+
+
+#channel
+c1 = Channel(m_name = 'c1',m_divisor=5, m_numOfInitialTokens=4, m_requiredTokens=5, m_previousActor=camera, m_nextActor=base_frame)
 channel_list.append(c1)
-c2 = Channel(m_name = 'c2',m_divisor=1, m_numOfInitialTokens=0, m_requiredTokens=4, m_previousActor=a1, m_nextActor=a2)
+
+c2 = Channel(m_name = 'c2',m_divisor=5, m_numOfInitialTokens=0, m_requiredTokens=5, m_previousActor=camera, m_nextActor=search_frame)
 channel_list.append(c2)
-c3 = Channel(m_name = 'c3',m_divisor=1, m_numOfInitialTokens=0, m_requiredTokens=1, m_previousActor=a2, m_nextActor=a3)
-#print("c3.divisor={}\nc3.numOfInitialTokens={}\nc3.requiredTokens={}\n".format(c3.divisor,c3.numOfInitialTokens,c3.requiredTokens))
+
+c3 = Channel(m_name = 'c3',m_divisor=1, m_numOfInitialTokens=0, m_requiredTokens=1, m_previousActor=base_frame, m_nextActor=feature_detector_base_frame)
 channel_list.append(c3)
-c4 = Channel(m_name = 'c4',m_divisor=1, m_numOfInitialTokens=0, m_requiredTokens=2, m_previousActor=a3, m_nextActor=a4)
+
+c4 = Channel(m_name = 'c4',m_divisor=1, m_numOfInitialTokens=0, m_requiredTokens=1, m_previousActor=search_frame, m_nextActor=feature_detector_search_frame)
 channel_list.append(c4)
-c5 = Channel(m_name = 'c5',m_divisor=1, m_numOfInitialTokens=1, m_requiredTokens=1, m_previousActor=a4, m_nextActor=a4)
+
+c5 = Channel(m_name = 'c5',m_divisor=1, m_numOfInitialTokens=0, m_requiredTokens=1, m_previousActor=feature_detector_base_frame, m_nextActor=pseudo_landmarks)
 channel_list.append(c5)
-c6 = Channel(m_name = 'c6',m_divisor=1, m_numOfInitialTokens=0, m_requiredTokens=1, m_previousActor=a4, m_nextActor=a5)
+
+c6= Channel(m_name = 'c6',m_divisor=1, m_numOfInitialTokens=0, m_requiredTokens=1, m_previousActor=feature_detector_search_frame, m_nextActor=match_feature_landmarks)
 channel_list.append(c6)
 
-a1.nextChannel = [c1,c2]
-a2.nextChannel = c3
-a2.previousChannel = c2
-a3.previousChannel=[c1,c3]
-a3.nextChannel=c4
-a4.previousChannel=[c4,c5]
-a4.nextChannel=[c6,c5]
-a5.previousChannel=c6
-#print("A.consummedToken={}\nA.frequency={}\nA.nextChannel={}\nA.previousChannel={}\nA.producedToken={}\n".format(A.consummedToken,A.frequency,A.nextChannel,A.previousChannel,A.producedToken))
+c7 = Channel(m_name = 'c7',m_divisor=4, m_numOfInitialTokens=0, m_requiredTokens=1, m_previousActor=pseudo_landmarks, m_nextActor=match_feature_landmarks)
+channel_list.append(c7)
+
+c8 = Channel(m_name = 'c8',m_divisor=100, m_numOfInitialTokens=68, m_requiredTokens=4, m_previousActor=match_feature_landmarks, m_nextActor=extended_kalman_filter)
+channel_list.append(c8)
+
+c9 = Channel(m_name = 'c9',m_divisor=32, m_numOfInitialTokens=0, m_requiredTokens=32, m_previousActor=imu_1, m_nextActor=extended_kalman_filter)
+channel_list.append(c9)
+
+c10 = Channel(m_name = 'c10',m_divisor=1, m_numOfInitialTokens=0, m_requiredTokens=1, m_previousActor=extended_kalman_filter, m_nextActor=state_propagation)
+channel_list.append(c10)
+
+c11 = Channel(m_name = 'c11',m_divisor=10, m_numOfInitialTokens=0, m_requiredTokens=1, m_previousActor=LRF, m_nextActor=extended_kalman_filter)
+channel_list.append(c11)
+
+c12 = Channel(m_name = 'c12',m_divisor=1, m_numOfInitialTokens=0, m_requiredTokens=1, m_previousActor=state_propagation, m_nextActor=mode_commander)
+channel_list.append(c12)
+
+c13 = Channel(m_name = 'c13',m_divisor=20, m_numOfInitialTokens=40, m_requiredTokens=20, m_previousActor=mode_commander, m_nextActor=camera)
+channel_list.append(c13)
+
+c14 = Channel(m_name = 'c14',m_divisor=5, m_numOfInitialTokens=11, m_requiredTokens=5, m_previousActor=mode_commander, m_nextActor=imu_1)
+channel_list.append(c14)
+
+c15 = Channel(m_name = 'c15',m_divisor=32, m_numOfInitialTokens=0, m_requiredTokens=32, m_previousActor=imu_1, m_nextActor=state_propagation)
+channel_list.append(c15)
+
+c16 = Channel(m_name = 'c16',m_divisor=10, m_numOfInitialTokens=20, m_requiredTokens=10, m_previousActor=mode_commander, m_nextActor=LRF)
+channel_list.append(c16)
+
+c17 = Channel(m_name = 'c17',m_divisor=10, m_numOfInitialTokens=0, m_requiredTokens=1, m_previousActor=LRF, m_nextActor=state_propagation)
+channel_list.append(c17)
+
+camera.nextChannel=[c1,c2]
+camera.previousChannel=c13
+
+base_frame.nextChannel=c3
+base_frame.previousChannel=c1
+
+search_frame.nextChannel=c4
+search_frame.previousChannel=c2
+
+feature_detector_base_frame.nextChannel=c5
+feature_detector_base_frame.previousChannel=c3
+
+feature_detector_search_frame.nextChannel=c6
+feature_detector_search_frame.previousChannel=c4
+
+pseudo_landmarks.nextChannel=c7
+pseudo_landmarks.previousChannel=c5
+
+match_feature_landmarks.nextChannel=c8
+match_feature_landmarks.previousChannel=[c6,c7]
+
+extended_kalman_filter.nextChannel=c10
+extended_kalman_filter.previousChannel=[c8,c9,c11]
+
+imu_1.nextChannel=[c9,c15]
+imu_1.previousChannel=c14
+
+mode_commander.nextChannel=[c13,c14,c16]
+mode_commander.previousChannel=c12
+
+LRF.nextChannel=[c11,c17]
+LRF.previousChannel=c16
+
+state_propagation.nextChannel=c12
+state_propagation.previousChannel=[c10,c15,c17]
 
 myTimer = LogicTimer(m_tic=5, m_t0 = 0)
 ##########################################################################
@@ -216,16 +305,12 @@ myTimer = LogicTimer(m_tic=5, m_t0 = 0)
 ##########################################################################  
 topologicMatrix = processTopologicMatrix(actors_list,channel_list)
 print("matrice topologique : \n",topologicMatrix)
-#matrix_mini = np.delete(topologicMatrix,4,0)
-#print("matrix simplifiée= ",matrix_mini)
-#solutions=[(x1,x2,x3,x4,x5) for x1 in range(1,20) for x2 in range(1,20) for x3 in range(1,20) for x4 in range(1,20) for x5 in range(1,20) if 3*x1-2*x3==0 and 2*x1-4*x2==0 and 3*x2-x3==0 and x3-2*x4==0 and x4-x5==0]
-#print(solutions)
 repeatVector = processRepeatVector(topologicMatrix)
 print("vecteur de répétition :",repeatVector)
 
 
 IsEnough = True #flag False if at least one of the following channels of an actor has not enough tokens to allow the next actor to fire
-for t in range(81):
+for t in range(11):
     # /!\ Beware, the 2 following functions can't be uncommented in the same time /!\ 
     #Uncomment the function below to allow an implementation where firing frequency of not timed actors is determined during runtime
     #implementationWithFiringFrequencyDeterminedDuringRuntime(myTimer,actors_list)
@@ -235,3 +320,4 @@ for t in range(81):
     
 
 chekFiring(actors_list)#debug function
+    

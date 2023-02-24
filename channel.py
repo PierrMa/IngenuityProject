@@ -18,11 +18,11 @@ class Channel:
         else:
             self.divisor = m_divisor
         self.name = m_name
-        self.numOfInitialTokens = m_numOfInitialTokens
-        self.requiredTokens = m_requiredTokens
+        self.numOfInitialTokens = m_numOfInitialTokens/m_divisor
+        self.requiredTokens = m_requiredTokens/m_divisor
         self.previousActor = m_previousActor
         self.nextActor = m_nextActor
-        self.numOfCurrentTokens = m_numOfInitialTokens
+        self.numOfCurrentTokens = m_numOfInitialTokens/m_divisor
 
     def fireNext(self,t0):
         """
@@ -44,7 +44,7 @@ class Channel:
             #print("check to fire",self.nextActor.name)
             for i in self.nextActor.previousChannel:#on récupère le nombre de jetons requis pour l'activation
                 if(i.numOfCurrentTokens < i.requiredTokens):
-                    isEnough = isEnough and False
+                    isEnough = False
                     #print("Not enough tokens on {}".format(i.name))
                     if(i.nextActor.frequency>0):
                         print("{} can't respect its firing frequency at {}ms => livelyness not checked".format(i.nextActor.name,t0))

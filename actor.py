@@ -1,7 +1,7 @@
 class Actor:
     """generic class for actors"""
 
-    def __init__(self,m_name,m_consummedToken=1,m_producedToken=1,m_frequency=0,m_nextChannel=None,m_previousChannel=None):
+    def __init__(self,m_name,m_consummedToken=1,m_producedToken=1,m_frequency=0,m_nextChannel=None,m_previousChannel=None,m_delay=0):
         """
             Initialization function
             m_name = actor's name
@@ -10,6 +10,7 @@ class Actor:
             m_frequency = actor's firing frequency
             m_nextChannel = channel that precedes the actor
             m_previousChannel = channel that follows the actor
+            m_delay : date from which the actor should start
         """
         self.name = m_name
         self.consummedToken = m_consummedToken
@@ -20,6 +21,7 @@ class Actor:
         self.numOfFirings = 0 #number of times the actor has been fired
         self.datesOfFirings = [] #firing dates of the actor
         self.numOfFiringsPerExecution = 0 #number of times the actor has been fired in a execution of a yhe graph. This variable is reset for each new execution of the graph
+        self.delay = m_delay
 
     def produce(self):
         """
@@ -28,10 +30,10 @@ class Actor:
         if(self.nextChannel != None):
             try:
                 for i in range(len(self.nextChannel)):
-                    self.nextChannel[i].numOfCurrentTokens +=  self.producedToken[i]
+                    self.nextChannel[i].numOfCurrentTokens +=  self.producedToken[i]/self.nextChannel[i].divisor
                     #print("current tokens on {} = {} (after {} firing)".format(self.nextChannel[i].name,self.nextChannel[i].numOfCurrentTokens,self.name))
             except:
-                self.nextChannel.numOfCurrentTokens +=  self.producedToken
+                self.nextChannel.numOfCurrentTokens +=  self.producedToken/self.nextChannel.divisor
                 #print("current tokens on {} = {} (after {} firing)".format(self.nextChannel.name,self.nextChannel.numOfCurrentTokens,self.name))
         
     def consume(self):
@@ -41,11 +43,11 @@ class Actor:
         if(self.previousChannel != None):
             try:
                 for i in range(len(self.previousChannel)):
-                    self.previousChannel[i].numOfCurrentTokens -= self.consummedToken[i]
+                    self.previousChannel[i].numOfCurrentTokens -= self.consummedToken[i]/self.previousChannel[i].divisor
                     #print("current tokens on {}={} (after {} firing)".format(self.previousChannel[i].name,self.previousChannel[i].numOfCurrentTokens,self.name))
                     
             except:
-                self.previousChannel.numOfCurrentTokens -= self.consummedToken
+                self.previousChannel.numOfCurrentTokens -= self.consummedToken/self.previousChannel.divisor
                 #print("current tokens on {}={} (after {} firing)".format(self.previousChannel.name,self.previousChannel.numOfCurrentTokens,self.name))
 
     def printStat(self):

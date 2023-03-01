@@ -1,5 +1,3 @@
-import time
-
 class Channel:
     """generic class for channels"""
     def __init__(self,m_name,m_requiredTokens,m_previousActor,m_nextActor,m_numOfInitialTokens=0,m_divisor=1):
@@ -46,8 +44,8 @@ class Channel:
                 if(i.numOfCurrentTokens < i.requiredTokens):
                     isEnough = False
                     #print("Not enough tokens on {}".format(i.name))
-                    if(i.nextActor.frequency>0):
-                        print("{} can't respect its firing frequency at {}ms => livelyness not checked".format(i.nextActor.name,t0))
+                    #if(i.nextActor.frequency>0):
+                        #print("{} can't respect its firing frequency at {}ms => livelyness not checked".format(i.nextActor.name,t0))
                     
             if(isEnough):
                 self.fireNext(t0)
@@ -55,8 +53,8 @@ class Channel:
             #print("check to fire",self.nextActor.name)
             if(self.numOfCurrentTokens >= self.requiredTokens):
                 self.fireNext(t0) #the actor following the channel is fired
-            else:
+            #else:
                 #print("Not enough tokens on {}".format(self.name))
-                if(self.nextActor.frequency>0):
-                    print("{} can't respect its firing frequency at {}ms => livelyness not checked".format(self.nextActor.name,t0))
+                #if(self.nextActor.frequency>0):
+                    #print("{} can't respect its firing frequency at {}ms => livelyness not checked".format(self.nextActor.name,t0))
 

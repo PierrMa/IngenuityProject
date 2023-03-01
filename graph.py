@@ -52,7 +52,7 @@ def processRepeatVector(matrix):
         areAllIntegers = True
         k += 1
         for i in myVector:
-            if (round(i*k,6)!=int(i*k)): #check if all the number of the repat vector are integers
+            if (round(i*k,10)!=int(i*k)): #check if all the number of the repat vector are integers
                 areAllIntegers = False
     for i in range(len(myVector)):
         myVector[i] = int(k*myVector[i])
@@ -82,7 +82,7 @@ def isExecutionCompleted(actors_list,repeatVector):
     #check if the number of firing for each actor is equal to the number of firing requiered to complete an execution of the graph
     for index, numOfFiring in enumerate(numOfFiringList):
         if(repeatVector[index]!=numOfFiring):
-            isTheSame = isTheSame and False
+            isTheSame = False
     return isTheSame
 
 def checkConsistancy(actors_list,repeatVector,channel_list):
@@ -95,7 +95,6 @@ def checkConsistancy(actors_list,repeatVector,channel_list):
     weAreBack = True
 
     isCompleted = isExecutionCompleted(actors_list,repeatVector)
-    
     #if a complete execution of the graph has been done, check if we are back to initial state
     if(isCompleted):
         for i in channel_list:
@@ -121,7 +120,10 @@ def implementationWithFiringFrequencyDeterminedDuringRuntime(myTimer,actors_list
     
     for i in actors_list:
         if((i.frequency>0) and ((current_time)%(1000/i.frequency)==0)):#check if it is time to fired timed actors
-            myTimer.wait(current_time,i)
+            if(i.delay>0 and (current_time>=i.delay)):
+                myTimer.wait(current_time,i)
+            elif(i.delay==0):
+                myTimer.wait(current_time,i)
         elif (i.frequency==0):
             if(i.nextChannel != None):#if the actor has at least one following channel
                 try: #for actors with more than one following channel
@@ -149,8 +151,10 @@ def implementationWithFiringFrequencyDeterminedAtCompilerTime(myTimer,actors_lis
     #print("============================ T = {}ms ============================= ".format(current_time))
     
     for index,actor in enumerate(actors_list):
-        if((actor.frequency>0) and ((current_time)%(1000/actor.frequency)==0) and (current_time!=0)): #check if it is time to fired timed actors
+        if((actor.frequency>0) and ((current_time)%(1000/actor.frequency)==0) and (actor.numOfFiringsPerExecution<repeatVector[index])): #check if it is time to fired timed actors
             if(actor.delay>0 and (current_time>=actor.delay)):
+                myTimer.wait(current_time,actor)
+            elif(actor.delay==0 ):
                 myTimer.wait(current_time,actor)
         elif (actor.frequency==0):
             if(actor.numOfFiringsPerExecution<repeatVector[index]): #check is the actor has already been fired enough to complete an execution of the graph
@@ -251,7 +255,7 @@ channel_list.append(c12)
 c13 = Channel(m_name = 'c13',m_divisor=20, m_numOfInitialTokens=40, m_requiredTokens=20, m_previousActor=mode_commander, m_nextActor=camera)
 channel_list.append(c13)
 
-c14 = Channel(m_name = 'c14',m_divisor=5, m_numOfInitialTokens=11, m_requiredTokens=5, m_previousActor=mode_commander, m_nextActor=imu_1)
+c14 = Channel(m_name = 'c14',m_divisor=5, m_numOfInitialTokens=55, m_requiredTokens=5, m_previousActor=mode_commander, m_nextActor=imu_1)
 channel_list.append(c14)
 
 c15 = Channel(m_name = 'c15',m_divisor=32, m_numOfInitialTokens=0, m_requiredTokens=32, m_previousActor=imu_1, m_nextActor=state_propagation)
@@ -299,18 +303,18 @@ LRF.previousChannel=c16
 state_propagation.nextChannel=c12
 state_propagation.previousChannel=[c10,c15,c17]
 
-myTimer = LogicTimer(m_tic=5, m_t0 = 0)
+myTimer = LogicTimer(m_tic=0.0625, m_t0 = 0)
 ##########################################################################
 #                               main program
 ##########################################################################  
 topologicMatrix = processTopologicMatrix(actors_list,channel_list)
-print("matrice topologique : \n",topologicMatrix)
+#print("matrice topologique : \n",topologicMatrix)
 repeatVector = processRepeatVector(topologicMatrix)
 print("vecteur de répétition :",repeatVector)
 
 
 IsEnough = True #flag False if at least one of the following channels of an actor has not enough tokens to allow the next actor to fire
-for t in range(11):
+for t in range(7000):
     # /!\ Beware, the 2 following functions can't be uncommented in the same time /!\ 
     #Uncomment the function below to allow an implementation where firing frequency of not timed actors is determined during runtime
     #implementationWithFiringFrequencyDeterminedDuringRuntime(myTimer,actors_list)

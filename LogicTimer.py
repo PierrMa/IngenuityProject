@@ -17,6 +17,7 @@ class LogicTimer:
             method to increment the timer of one tic
         """
         self.__current_time+=self.tic
+        self.__current_time = round(self.__current_time,6)
     
     def do_task(self,milestone):
         """

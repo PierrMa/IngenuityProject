@@ -52,7 +52,7 @@ def processRepeatVector(matrix):
         areAllIntegers = True
         k += 1
         for i in myVector:
-            if (round(i*k,10)!=int(i*k)): #check if all the number of the repat vector are integers
+            if (round(i*k,15)!=int(i*k)): #check if all the number of the repat vector are integers
                 areAllIntegers = False
     for i in range(len(myVector)):
         myVector[i] = int(k*myVector[i])
@@ -73,7 +73,7 @@ def isExecutionCompleted(actors_list,repeatVector):
         repeatVector : repeat vector of the graph
     """
     numOfFiringList = [] #list to get the current number of firing for each actor (in order)
-    isTheSame = True #this flag is true if the repeat vector is equal to numOfFiringList
+    isCompleted = True #this flag is true if the repeat vector is equal to numOfFiringList
 
     #get the number of firing for each actor in a list
     for i in actors_list:
@@ -82,8 +82,8 @@ def isExecutionCompleted(actors_list,repeatVector):
     #check if the number of firing for each actor is equal to the number of firing requiered to complete an execution of the graph
     for index, numOfFiring in enumerate(numOfFiringList):
         if(repeatVector[index]!=numOfFiring):
-            isTheSame = False
-    return isTheSame
+            isCompleted = False
+    return isCompleted
 
 def checkConsistancy(actors_list,repeatVector,channel_list):
     """
@@ -103,6 +103,8 @@ def checkConsistancy(actors_list,repeatVector,channel_list):
     
     if((isCompleted) and (not weAreBack)):
         print("Consistency not checked!")
+        for i in channel_list:
+            print("numOfCurrentTokens of {} = {}".format(i.name,i.numOfCurrentTokens))
     if(isCompleted and weAreBack):
         print("Consistency checked!")
 
@@ -147,18 +149,21 @@ def implementationWithFiringFrequencyDeterminedAtCompilerTime(myTimer,actors_lis
         repeatVector : repeat vector of the graph
     """
     current_time = myTimer.get_current_time() #get the current value of the logical clock
-    
+    current_time = round(current_time,6)
     #print("============================ T = {}ms ============================= ".format(current_time))
     
     for index,actor in enumerate(actors_list):
-        if((actor.frequency>0) and ((current_time)%(1000/actor.frequency)==0) and (actor.numOfFiringsPerExecution<repeatVector[index])): #check if it is time to fired timed actors
+        if((actor.frequency>0) and (actor.numOfFiringsPerExecution<repeatVector[index])): #check if it is time to fired timed actors
             if(actor.delay>0 and (current_time>=actor.delay)):
-                myTimer.wait(current_time,actor)
+                if((current_time-actor.delay)%(1000/actor.frequency)==0):
+                    myTimer.wait(current_time,actor)
             elif(actor.delay==0 ):
-                myTimer.wait(current_time,actor)
+                if((current_time)%(1000/actor.frequency)==0):
+                    myTimer.wait(current_time,actor)
         elif (actor.frequency==0):
             if(actor.numOfFiringsPerExecution<repeatVector[index]): #check is the actor has already been fired enough to complete an execution of the graph
                 myTimer.wait(current_time,actor)
+            
     
     myTimer.do_task(current_time)#fire the actors if it is possible
     myTimer.run() #add one period to the logical clock
@@ -303,7 +308,7 @@ LRF.previousChannel=c16
 state_propagation.nextChannel=c12
 state_propagation.previousChannel=[c10,c15,c17]
 
-myTimer = LogicTimer(m_tic=0.0625, m_t0 = 0)
+myTimer = LogicTimer(m_tic=0.0125, m_t0 = 0)
 ##########################################################################
 #                               main program
 ##########################################################################  
@@ -314,7 +319,7 @@ print("vecteur de répétition :",repeatVector)
 
 
 IsEnough = True #flag False if at least one of the following channels of an actor has not enough tokens to allow the next actor to fire
-for t in range(7000):
+for t in range(20000):
     # /!\ Beware, the 2 following functions can't be uncommented in the same time /!\ 
     #Uncomment the function below to allow an implementation where firing frequency of not timed actors is determined during runtime
     #implementationWithFiringFrequencyDeterminedDuringRuntime(myTimer,actors_list)

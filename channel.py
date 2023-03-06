@@ -16,11 +16,11 @@ class Channel:
         else:
             self.divisor = m_divisor
         self.name = m_name
-        self.numOfInitialTokens = m_numOfInitialTokens/m_divisor
-        self.requiredTokens = m_requiredTokens/m_divisor
+        self.numOfInitialTokens = round(m_numOfInitialTokens/m_divisor,4)
+        self.requiredTokens = round(m_requiredTokens/m_divisor,4)
         self.previousActor = m_previousActor
         self.nextActor = m_nextActor
-        self.numOfCurrentTokens = m_numOfInitialTokens/m_divisor
+        self.numOfCurrentTokens = round(m_numOfInitialTokens/m_divisor,4)
 
     def fireNext(self,t0):
         """

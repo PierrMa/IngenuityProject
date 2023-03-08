@@ -9,6 +9,7 @@ class Channel:
             m_requiredTokens : number of tokens requiered to fire the actor following the channel
             m_previousActor : actor which produces tokens on the channel
             m_nextActor : actor which consumes tokens from the channel
+            m_multiplier : multiplier to reduce to the same denominator
         """
         if(m_divisor==0):
             print("ZeroDivisionError")
@@ -16,11 +17,12 @@ class Channel:
         else:
             self.divisor = m_divisor
         self.name = m_name
-        self.numOfInitialTokens = round(m_numOfInitialTokens/m_divisor,4)
-        self.requiredTokens = round(m_requiredTokens/m_divisor,4)
+        self.numOfInitialTokens = m_numOfInitialTokens
+        self.requiredTokens = m_requiredTokens
         self.previousActor = m_previousActor
         self.nextActor = m_nextActor
-        self.numOfCurrentTokens = round(m_numOfInitialTokens/m_divisor,4)
+        self.numOfCurrentTokens = m_numOfInitialTokens
+        self.multiplier = 1
 
     def fireNext(self,t0):
         """
@@ -44,8 +46,8 @@ class Channel:
                 if(i.numOfCurrentTokens < i.requiredTokens):
                     isEnough = False
                     #print("Not enough tokens on {}".format(i.name))
-                    #if(i.nextActor.frequency>0):
-                        #print("{} can't respect its firing frequency at {}ms => livelyness not checked".format(i.nextActor.name,t0))
+                    if(i.nextActor.frequency>0):
+                        print("{} can't respect its firing frequency at {}ms => livelyness not checked".format(i.nextActor.name,t0))
                     
             if(isEnough):
                 self.fireNext(t0)
@@ -53,8 +55,13 @@ class Channel:
             #print("check to fire",self.nextActor.name)
             if(self.numOfCurrentTokens >= self.requiredTokens):
                 self.fireNext(t0) #the actor following the channel is fired
-            #else:
+            else:
                 #print("Not enough tokens on {}".format(self.name))
-                #if(self.nextActor.frequency>0):
-                    #print("{} can't respect its firing frequency at {}ms => livelyness not checked".format(self.nextActor.name,t0))
+                if(self.nextActor.frequency>0):
+                    print("{} can't respect its firing frequency at {}ms => livelyness not checked".format(self.nextActor.name,t0))
 
+def reduceToTheSameDevisor(self):
+    self.divisor *= self.multiplier 
+    self.numOfInitialTokens *= self.multiplier 
+    self.requiredTokens *= self.multiplier 
+    self.numOfCurrentTokens *= self.multiplier 

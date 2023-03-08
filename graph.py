@@ -26,16 +26,16 @@ def processTopologicMatrix(actor_list,channel_list):
                             matrix[i,j]+=-k.requiredTokens
                 except:
                     if(actor.previousChannel==channel):
-                        matrix[i,j]+=-actor.consummedToken/channel.divisor
+                        matrix[i,j]+=-actor.consummedToken#/channel.divisor
             #explore next channel(s)
             if(actor.nextChannel!=None):
                 try:
                     for k,next in enumerate(actor.nextChannel):
                         if(next==channel):
-                            matrix[i,j]+=actor.producedToken[k]/channel.divisor
+                            matrix[i,j]+=actor.producedToken[k]#/channel.divisor
                 except:
                     if(actor.nextChannel==channel):
-                        matrix[i,j]+=actor.producedToken/channel.divisor
+                        matrix[i,j]+=actor.producedToken#/channel.divisor
     return matrix
 
 def processRepeatVector(matrix):
@@ -175,7 +175,29 @@ def implementationWithFiringFrequencyDeterminedAtCompilerTime(myTimer,actors_lis
         for i in actors_list:
             i.numOfFiringsPerExecution = 0
 
+def decimalToInteger(channels_list):
+    """
+        Function to allows the use of integer rather than decimal for tokens
+        channels_list: channels list
+        actors_list: actors list
+    """
+    divisor_list=[]
+    for i in channels_list:
+        divisor_list.append(i.divisor)
+    print("divisor_list",divisor_list)
+    ppcm = np.lcm.reduce(divisor_list)
+    print("ppcm=",ppcm)
 
+    multiplier_list = []
+
+    for i in divisor_list:
+        multiplier_list.append(ppcm/i)
+
+    multiplier_list=np.array(multiplier_list)
+    print(multiplier_list)
+    for index,channel in enumerate(channels_list):
+        channel.multiplier = multiplier_list[index]
+    
 ##########################################################################
 #                               Variables
 ##########################################################################
@@ -311,11 +333,14 @@ state_propagation.previousChannel=[c10,c15,c17]
 myTimer = LogicTimer(m_tic=0.0125, m_t0 = 0)
 ##########################################################################
 #                               main program
-##########################################################################  
+########################################################################## 
+
+decimalToInteger(channel_list)
+
 topologicMatrix = processTopologicMatrix(actors_list,channel_list)
-#print("matrice topologique : \n",topologicMatrix)
+print("matrice topologique : \n",topologicMatrix)
 repeatVector = processRepeatVector(topologicMatrix)
-print("vecteur de répétition :",repeatVector)
+#print("vecteur de répétition :",repeatVector)
 
 
 IsEnough = True #flag False if at least one of the following channels of an actor has not enough tokens to allow the next actor to fire
@@ -328,5 +353,5 @@ for t in range(20000):
     implementationWithFiringFrequencyDeterminedAtCompilerTime(myTimer,actors_list,repeatVector)
     
 
-chekFiring(actors_list)#debug function
+#chekFiring(actors_list)#debug function
     

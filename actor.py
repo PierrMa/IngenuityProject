@@ -1,7 +1,7 @@
 class Actor:
     """generic class for actors"""
 
-    def __init__(self,m_name,m_consummedToken=1,m_producedToken=1,m_frequency=0,m_nextChannel=None,m_previousChannel=None,m_delay=0):
+    def __init__(self,m_name,m_consummedToken=1,m_producedToken=1,m_frequency=0,m_nextChannel=None,m_previousChannel=None,m_delay=0,m_delayInTic=0):
         """
             Initialization function
             m_name = actor's name
@@ -11,6 +11,7 @@ class Actor:
             m_nextChannel = channel that precedes the actor
             m_previousChannel = channel that follows the actor
             m_delay : date from which the actor should start
+            m_delayInTic : date in tics from which the actor should start
         """
         self.name = m_name
         self.consummedToken = m_consummedToken
@@ -22,6 +23,8 @@ class Actor:
         self.datesOfFirings = [] #firing dates of the actor
         self.numOfFiringsPerExecution = 0 #number of times the actor has been fired in a execution of a yhe graph. This variable is reset for each new execution of the graph
         self.delay = m_delay
+        self.nbTic = 0 #period in nb of LogicTimer tic
+        self.delayInTic = m_delayInTic
 
     def produce(self):
         """

@@ -198,6 +198,45 @@ def decimalToInteger(channels_list):
     for index,channel in enumerate(channels_list):
         channel.multiplier = multiplier_list[index]
 
+def msToTic(actors_list,clock_period):
+    for i in actors_list:
+        if(i.frequency>0):
+            i.nbTic = (1000/i.frequency)/clock_period
+            i.delayInTic = i.delay/clock_period
+
+def implementationWithFiringFrequencyDeterminedAtCompilerTimeInteger(myTimer,actors_list,repeatVector):
+    """
+        function to fire actors regarding a frequency determined at compiler time for each actor
+        myTimer: logical timer
+        actors_list: list of actors
+        repeatVector : repeat vector of the graph
+    """
+    current_time = myTimer.get_current_time() #get the current value of the logical clock
+    #print("============================ T = {}ms ============================= ".format(current_time))
+    
+    for index,actor in enumerate(actors_list):
+        if((actor.frequency>0) and (actor.numOfFiringsPerExecution<repeatVector[index])): #check if it is time to fired timed actors
+            if(actor.delayInTic>0 and (current_time>=actor.delayInTic)):
+                if((current_time-actor.delayInTic)%(actor.nbTic)==0):
+                    myTimer.wait(current_time,actor)
+            elif(actor.delay==0 ):
+                if((current_time)%(actor.nbTic)==0):
+                    myTimer.wait(current_time,actor)
+        elif (actor.frequency==0):
+            if(actor.numOfFiringsPerExecution<repeatVector[index]): #check is the actor has already been fired enough to complete an execution of the graph
+                myTimer.wait(current_time,actor)
+            
+    
+    myTimer.do_task(current_time)#fire the actors if it is possible
+    myTimer.run() #add one period to the logical clock
+
+    checkConsistancy(actors_list,repeatVector,channel_list) #check consistency of the graph
+    
+    isCompleted = isExecutionCompleted(actors_list,repeatVector)#check if one execution of the graph has been completed    
+    if(isCompleted): #reset numOfFiringsPerExecution for each actor if an execution of the graph has been completed
+        for i in actors_list:
+            i.numOfFiringsPerExecution = 0
+        
 ##########################################################################
 #                               Variables
 ##########################################################################
@@ -264,10 +303,10 @@ channel_list.append(c6)
 c7 = Channel(m_name = 'c7',m_divisor=4, m_numOfInitialTokens=0, m_requiredTokens=1, m_previousActor=pseudo_landmarks, m_nextActor=match_feature_landmarks)
 channel_list.append(c7)
 
-c8 = Channel(m_name = 'c8',m_divisor=100, m_numOfInitialTokens=108, m_requiredTokens=4, m_previousActor=match_feature_landmarks, m_nextActor=extended_kalman_filter)
+c8 = Channel(m_name = 'c8',m_divisor=100, m_numOfInitialTokens=136, m_requiredTokens=4, m_previousActor=match_feature_landmarks, m_nextActor=extended_kalman_filter)
 channel_list.append(c8)
 
-c9 = Channel(m_name = 'c9',m_divisor=32, m_numOfInitialTokens=16, m_requiredTokens=32, m_previousActor=imu_1, m_nextActor=extended_kalman_filter)
+c9 = Channel(m_name = 'c9',m_divisor=32, m_numOfInitialTokens=104, m_requiredTokens=32, m_previousActor=imu_1, m_nextActor=extended_kalman_filter)
 channel_list.append(c9)
 
 c10 = Channel(m_name = 'c10',m_divisor=1, m_numOfInitialTokens=3, m_requiredTokens=1, m_previousActor=extended_kalman_filter, m_nextActor=state_propagation)
@@ -285,7 +324,7 @@ channel_list.append(c13)
 c14 = Channel(m_name = 'c14',m_divisor=5, m_numOfInitialTokens=80, m_requiredTokens=5, m_previousActor=mode_commander, m_nextActor=imu_1)
 channel_list.append(c14)
 
-c15 = Channel(m_name = 'c15',m_divisor=32, m_numOfInitialTokens=74, m_requiredTokens=32, m_previousActor=imu_1, m_nextActor=state_propagation)
+c15 = Channel(m_name = 'c15',m_divisor=32, m_numOfInitialTokens=89, m_requiredTokens=32, m_previousActor=imu_1, m_nextActor=state_propagation)
 channel_list.append(c15)
 
 c16 = Channel(m_name = 'c16',m_divisor=10, m_numOfInitialTokens=23, m_requiredTokens=10, m_previousActor=mode_commander, m_nextActor=LRF)
@@ -345,14 +384,12 @@ print("vecteur de répétition :",repeatVector)
 for i in channel_list:
     i.reduceToTheSameDevisor()
 
+msToTic(actors_list,myTimer.tic)
+
 IsEnough = True #flag False if at least one of the following channels of an actor has not enough tokens to allow the next actor to fire
-for t in range(200000):
-    # /!\ Beware, the 2 following functions can't be uncommented in the same time /!\ 
-    #Uncomment the function below to allow an implementation where firing frequency of not timed actors is determined during runtime
-    #implementationWithFiringFrequencyDeterminedDuringRuntime(myTimer,actors_list)
-    
-    #Uncomment the function below to allow an implementation where firing frequency of not timed actors is determined at compiler time
-    implementationWithFiringFrequencyDeterminedAtCompilerTime(myTimer,actors_list,repeatVector)
-    
+for t in range(2000000):
+    #allow an implementation where firing frequency of not timed actors is determined at compiler time and use period in nb tics
+    implementationWithFiringFrequencyDeterminedAtCompilerTimeInteger(myTimer,actors_list,repeatVector)
+
 #chekFiring(actors_list)#debug function
     

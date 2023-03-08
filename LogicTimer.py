@@ -16,8 +16,7 @@ class LogicTimer:
         """
             method to increment the timer of one tic
         """
-        self.__current_time+=self.tic
-        self.__current_time = round(self.__current_time,6)
+        self.__current_time+=1
     
     def do_task(self,milestone):
         """
@@ -33,10 +32,10 @@ class LogicTimer:
         while(task[len(task)-1-i][0]<=milestone and (len(task)-1-i>=0)):
             actor = task[len(task)-1-i][1]
             if(actor.previousChannel==None): #for actors without incoming channels
-                #print("Activation of {} at {}ms".format(actor.name,self.__current_time))
+                #print("Activation of {} at {}ms".format(actor.name,self.__current_time_in_tic))
                 actor.produce()
                 actor.numOfFirings += 1 #increment the number of times the actor has been fired
-                actor.datesOfFirings.append(str(self.__current_time)+'ms') #add the date of firing to the firing's date list of the actor
+                actor.datesOfFirings.append(str(self.__current_time_in_tic)+'tic(s)') #add the date of firing to the firing's date list of the actor
                 actor.numOfFiringsPerExecution += 1 #increment the number of times the actor has been fired during one execution of the graph
             else:
                 try: #try to see if there are more than one previous channel
@@ -46,6 +45,7 @@ class LogicTimer:
                     actor.previousChannel.checkTokens(self.__current_time)
             self.list_of_task.pop() 
             i+=1
+
     def get_current_time(self):
         """
             method to return the current value of the logic timer
@@ -60,3 +60,5 @@ class LogicTimer:
         """
         self.list_of_task.append([time_of_execution,actor])
         #print("passage dans wait, time of exexution = {} pour l'acteur {}".format(time_of_execution,actor.name))
+    
+    

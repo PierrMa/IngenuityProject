@@ -47,7 +47,8 @@ class Channel:
                     isEnough = False
                     #print("Not enough tokens on {}".format(i.name))
                     if(i.nextActor.frequency>0):
-                        print("{} can't respect its firing frequency at {}ms => livelyness not checked".format(i.nextActor.name,t0))
+                        print("{} can't respect its firing frequency at {}ms => liveliness not checked".format(i.nextActor.name,t0))
+                        print("There is a lack of {} tokens on {}".format(i.requiredTokens-i.numOfCurrentTokens,i.name))
                     
             if(isEnough):
                 self.fireNext(t0)
@@ -58,10 +59,11 @@ class Channel:
             else:
                 #print("Not enough tokens on {}".format(self.name))
                 if(self.nextActor.frequency>0):
-                    print("{} can't respect its firing frequency at {}ms => livelyness not checked".format(self.nextActor.name,t0))
+                    print("{} can't respect its firing frequency at {}ms => liveliness not checked".format(self.nextActor.name,t0))
+                    print("There is a lack of {} tokens on {}".format(self.requiredTokens-self.numOfCurrentTokens,self.name))
 
-def reduceToTheSameDevisor(self):
-    self.divisor *= self.multiplier 
-    self.numOfInitialTokens *= self.multiplier 
-    self.requiredTokens *= self.multiplier 
-    self.numOfCurrentTokens *= self.multiplier 
+    def reduceToTheSameDevisor(self):
+        self.divisor *= self.multiplier 
+        self.numOfInitialTokens *= self.multiplier 
+        self.requiredTokens *= self.multiplier 
+        self.numOfCurrentTokens *= self.multiplier 

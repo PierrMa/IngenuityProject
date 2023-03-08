@@ -197,7 +197,7 @@ def decimalToInteger(channels_list):
     print(multiplier_list)
     for index,channel in enumerate(channels_list):
         channel.multiplier = multiplier_list[index]
-    
+
 ##########################################################################
 #                               Variables
 ##########################################################################
@@ -264,16 +264,16 @@ channel_list.append(c6)
 c7 = Channel(m_name = 'c7',m_divisor=4, m_numOfInitialTokens=0, m_requiredTokens=1, m_previousActor=pseudo_landmarks, m_nextActor=match_feature_landmarks)
 channel_list.append(c7)
 
-c8 = Channel(m_name = 'c8',m_divisor=100, m_numOfInitialTokens=68, m_requiredTokens=4, m_previousActor=match_feature_landmarks, m_nextActor=extended_kalman_filter)
+c8 = Channel(m_name = 'c8',m_divisor=100, m_numOfInitialTokens=108, m_requiredTokens=4, m_previousActor=match_feature_landmarks, m_nextActor=extended_kalman_filter)
 channel_list.append(c8)
 
-c9 = Channel(m_name = 'c9',m_divisor=32, m_numOfInitialTokens=0, m_requiredTokens=32, m_previousActor=imu_1, m_nextActor=extended_kalman_filter)
+c9 = Channel(m_name = 'c9',m_divisor=32, m_numOfInitialTokens=16, m_requiredTokens=32, m_previousActor=imu_1, m_nextActor=extended_kalman_filter)
 channel_list.append(c9)
 
-c10 = Channel(m_name = 'c10',m_divisor=1, m_numOfInitialTokens=0, m_requiredTokens=1, m_previousActor=extended_kalman_filter, m_nextActor=state_propagation)
+c10 = Channel(m_name = 'c10',m_divisor=1, m_numOfInitialTokens=3, m_requiredTokens=1, m_previousActor=extended_kalman_filter, m_nextActor=state_propagation)
 channel_list.append(c10)
 
-c11 = Channel(m_name = 'c11',m_divisor=10, m_numOfInitialTokens=0, m_requiredTokens=1, m_previousActor=LRF, m_nextActor=extended_kalman_filter)
+c11 = Channel(m_name = 'c11',m_divisor=10, m_numOfInitialTokens=7, m_requiredTokens=1, m_previousActor=LRF, m_nextActor=extended_kalman_filter)
 channel_list.append(c11)
 
 c12 = Channel(m_name = 'c12',m_divisor=1, m_numOfInitialTokens=0, m_requiredTokens=1, m_previousActor=state_propagation, m_nextActor=mode_commander)
@@ -282,16 +282,16 @@ channel_list.append(c12)
 c13 = Channel(m_name = 'c13',m_divisor=20, m_numOfInitialTokens=40, m_requiredTokens=20, m_previousActor=mode_commander, m_nextActor=camera)
 channel_list.append(c13)
 
-c14 = Channel(m_name = 'c14',m_divisor=5, m_numOfInitialTokens=55, m_requiredTokens=5, m_previousActor=mode_commander, m_nextActor=imu_1)
+c14 = Channel(m_name = 'c14',m_divisor=5, m_numOfInitialTokens=80, m_requiredTokens=5, m_previousActor=mode_commander, m_nextActor=imu_1)
 channel_list.append(c14)
 
-c15 = Channel(m_name = 'c15',m_divisor=32, m_numOfInitialTokens=0, m_requiredTokens=32, m_previousActor=imu_1, m_nextActor=state_propagation)
+c15 = Channel(m_name = 'c15',m_divisor=32, m_numOfInitialTokens=74, m_requiredTokens=32, m_previousActor=imu_1, m_nextActor=state_propagation)
 channel_list.append(c15)
 
-c16 = Channel(m_name = 'c16',m_divisor=10, m_numOfInitialTokens=20, m_requiredTokens=10, m_previousActor=mode_commander, m_nextActor=LRF)
+c16 = Channel(m_name = 'c16',m_divisor=10, m_numOfInitialTokens=23, m_requiredTokens=10, m_previousActor=mode_commander, m_nextActor=LRF)
 channel_list.append(c16)
 
-c17 = Channel(m_name = 'c17',m_divisor=10, m_numOfInitialTokens=0, m_requiredTokens=1, m_previousActor=LRF, m_nextActor=state_propagation)
+c17 = Channel(m_name = 'c17',m_divisor=10, m_numOfInitialTokens=7, m_requiredTokens=1, m_previousActor=LRF, m_nextActor=state_propagation)
 channel_list.append(c17)
 
 camera.nextChannel=[c1,c2]
@@ -340,11 +340,13 @@ decimalToInteger(channel_list)
 topologicMatrix = processTopologicMatrix(actors_list,channel_list)
 print("matrice topologique : \n",topologicMatrix)
 repeatVector = processRepeatVector(topologicMatrix)
-#print("vecteur de répétition :",repeatVector)
+print("vecteur de répétition :",repeatVector)
 
+for i in channel_list:
+    i.reduceToTheSameDevisor()
 
 IsEnough = True #flag False if at least one of the following channels of an actor has not enough tokens to allow the next actor to fire
-for t in range(20000):
+for t in range(200000):
     # /!\ Beware, the 2 following functions can't be uncommented in the same time /!\ 
     #Uncomment the function below to allow an implementation where firing frequency of not timed actors is determined during runtime
     #implementationWithFiringFrequencyDeterminedDuringRuntime(myTimer,actors_list)
@@ -352,6 +354,5 @@ for t in range(20000):
     #Uncomment the function below to allow an implementation where firing frequency of not timed actors is determined at compiler time
     implementationWithFiringFrequencyDeterminedAtCompilerTime(myTimer,actors_list,repeatVector)
     
-
 #chekFiring(actors_list)#debug function
     

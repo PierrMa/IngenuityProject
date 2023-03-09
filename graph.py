@@ -6,6 +6,7 @@ from channel import Channel
 from LogicTimer import LogicTimer
 import numpy as np
 from sympy import *
+from math import gcd
 ##########################################################################
 #                               Functions
 ##########################################################################
@@ -64,7 +65,8 @@ def chekFiring(actors_list):
         actors_list : the list of actors to check
     """
     for i in actors_list:
-        i.printStat()
+        if(i.name!='master_clock'):
+            i.printStat()
 
 def isExecutionCompleted(actors_list,repeatVector):
     """
@@ -194,7 +196,7 @@ def decimalToInteger(channels_list):
         multiplier_list.append(ppcm/i)
 
     multiplier_list=np.array(multiplier_list)
-    print(multiplier_list)
+    print("multiplier_list",multiplier_list)
     for index,channel in enumerate(channels_list):
         channel.multiplier = multiplier_list[index]
 
@@ -202,7 +204,8 @@ def msToTic(actors_list,clock_period):
     for i in actors_list:
         if(i.frequency>0):
             i.nbTic = (1000/i.frequency)/clock_period
-            i.delayInTic = i.delay/clock_period
+        i.delayInTic = i.delay/clock_period
+            #print(i.nbTic,i.name)
 
 def implementationWithFiringFrequencyDeterminedAtCompilerTimeInteger(myTimer,actors_list,repeatVector):
     """
@@ -212,10 +215,12 @@ def implementationWithFiringFrequencyDeterminedAtCompilerTimeInteger(myTimer,act
         repeatVector : repeat vector of the graph
     """
     current_time = myTimer.get_current_time() #get the current value of the logical clock
-    #print("============================ T = {}ms ============================= ".format(current_time))
+    #print("============================ T = {}tic(s) ============================= ".format(current_time))
     
-    for index,actor in enumerate(actors_list):
-        if((actor.frequency>0) and (actor.numOfFiringsPerExecution<repeatVector[index])): #check if it is time to fired timed actors
+    """for index,actor in enumerate(actors_list):
+        if(actor.name==master_clock.name):
+            myTimer.wait(current_time,actor)
+        elif((actor.frequency>0)):# and (actor.numOfFiringsPerExecution<repeatVector[index])): #check if it is time to fired timed actors
             if(actor.delayInTic>0 and (current_time>=actor.delayInTic)):
                 if((current_time-actor.delayInTic)%(actor.nbTic)==0):
                     myTimer.wait(current_time,actor)
@@ -223,10 +228,32 @@ def implementationWithFiringFrequencyDeterminedAtCompilerTimeInteger(myTimer,act
                 if((current_time)%(actor.nbTic)==0):
                     myTimer.wait(current_time,actor)
         elif (actor.frequency==0):
-            if(actor.numOfFiringsPerExecution<repeatVector[index]): #check is the actor has already been fired enough to complete an execution of the graph
+            if(actor.delayInTic>0 and (current_time>=actor.delayInTic)):
+                #if(actor.numOfFiringsPerExecution<repeatVector[index]): #check is the actor has already been fired enough to complete an execution of the graph
                 myTimer.wait(current_time,actor)
-            
-    
+            elif(actor.delay==0 ):
+                #if(actor.numOfFiringsPerExecution<repeatVector[index]): #check is the actor has already been fired enough to complete an execution of the graph
+                myTimer.wait(current_time,actor)"""
+    """for actor in actors_list: 
+        if(actor.name=='master_clock'):
+            myTimer.wait(current_time,actor)
+        elif(actor.delayInTic>0 and (current_time>=actor.delayInTic)): 
+            myTimer.wait(current_time,actor)
+        elif(actor.delay==0 ): 
+            myTimer.wait(current_time,actor)"""
+    for actor,repeatNumber in zip(actors_list,repeatVector): 
+        if(actor.numOfFiringsPerExecution<repeatNumber):#check repeat vector
+            if((actor.delayInTic>0) and (current_time>=actor.delayInTic)):#check delay
+                if(actor.frequency>0 and ((current_time-actor.delayInTic)%(actor.nbTic)==0)): #check frequency
+                    myTimer.wait(current_time,actor)
+                elif(actor.frequency==0):
+                    myTimer.wait(current_time,actor)
+            elif(actor.delay==0):
+                if(actor.frequency>0 and((current_time)%(actor.nbTic)==0)):#check frequency
+                    myTimer.wait(current_time,actor)
+                elif(actor.frequency==0):
+                    myTimer.wait(current_time,actor)
+
     myTimer.do_task(current_time)#fire the actors if it is possible
     myTimer.run() #add one period to the logical clock
 
@@ -244,7 +271,7 @@ actors_list = []
 channel_list = []
 
 #definition des acteurs
-camera=Actor(m_name='Camera', m_consummedToken=20, m_producedToken=[1,4], m_frequency=25, m_nextChannel=None, m_previousChannel=None)
+camera=Actor(m_name='Camera', m_consummedToken=[20,3200], m_producedToken=[1,4], m_frequency=25, m_nextChannel=None, m_previousChannel=None)
 actors_list.append(camera)
 
 base_frame=Actor(m_name='base_frame',m_consummedToken=5,m_producedToken=1, m_frequency=0, m_nextChannel=None, m_previousChannel=None)
@@ -265,21 +292,23 @@ actors_list.append(pseudo_landmarks)
 match_feature_landmarks=Actor(m_name='match_feature_landmarks', m_consummedToken=[1,1],m_producedToken=100,m_frequency=0,m_nextChannel=None,m_previousChannel=None)
 actors_list.append(match_feature_landmarks)
 
-extended_kalman_filter=Actor(m_name='extended_kalman_filter', m_consummedToken=[4,32,1], m_producedToken=1, m_frequency=500, m_nextChannel=None, m_previousChannel=None,m_delay=7.8)
+extended_kalman_filter=Actor(m_name='extended_kalman_filter', m_consummedToken=[4,32,1,160], m_producedToken=1, m_frequency=500, m_nextChannel=None, m_previousChannel=None,m_delay=7.8)
 actors_list.append(extended_kalman_filter)
 
-imu_1=Actor(m_name='IMU_1', m_consummedToken=5, m_producedToken=[5,5], m_frequency=3200, m_nextChannel=None,m_previousChannel=None,m_delay=5.8)
+imu_1=Actor(m_name='IMU_1', m_consummedToken=[5,25], m_producedToken=[5,5], m_frequency=3200, m_nextChannel=None,m_previousChannel=None,m_delay=5.8)
 actors_list.append(imu_1)
 
 mode_commander=Actor(m_name='mode_commander', m_consummedToken=1, m_producedToken=[1,32,1], m_frequency=0, m_nextChannel=None, m_previousChannel=None)
 actors_list.append(mode_commander)
 
-LRF=Actor(m_name='LRF', m_consummedToken=10, m_producedToken=[10,10], m_frequency=50, m_nextChannel=None, m_previousChannel=None)
+LRF=Actor(m_name='LRF', m_consummedToken=[10,1600], m_producedToken=[10,10], m_frequency=50, m_nextChannel=None, m_previousChannel=None)
 actors_list.append(LRF)
 
-state_propagation=Actor(m_name='state_propagation', m_consummedToken=[1,32,1], m_producedToken=1, m_frequency=500,m_nextChannel=None,m_previousChannel=None,m_delay=8.8)
+state_propagation=Actor(m_name='state_propagation', m_consummedToken=[1,32,1,160], m_producedToken=1, m_frequency=500,m_nextChannel=None,m_previousChannel=None,m_delay=8.8)
 actors_list.append(state_propagation)
 
+master_clock=Actor(m_name='master_clock', m_consummedToken=0, m_producedToken=[1,1,1,1,1], m_frequency=80000,m_nextChannel=None,m_previousChannel=None,m_delay=0)
+actors_list.append(master_clock)
 
 #channel
 c1 = Channel(m_name = 'c1',m_divisor=5, m_numOfInitialTokens=4, m_requiredTokens=5, m_previousActor=camera, m_nextActor=base_frame)
@@ -333,8 +362,23 @@ channel_list.append(c16)
 c17 = Channel(m_name = 'c17',m_divisor=10, m_numOfInitialTokens=7, m_requiredTokens=1, m_previousActor=LRF, m_nextActor=state_propagation)
 channel_list.append(c17)
 
+c18 = Channel(m_name = 'c18',m_divisor=1, m_numOfInitialTokens=3199, m_requiredTokens=3200, m_previousActor=master_clock, m_nextActor=camera)
+channel_list.append(c18)
+
+c19 = Channel(m_name = 'c19',m_divisor=1, m_numOfInitialTokens=0, m_requiredTokens=160, m_previousActor=master_clock, m_nextActor=extended_kalman_filter)
+channel_list.append(c19)
+
+c20 = Channel(m_name = 'c20',m_divisor=1, m_numOfInitialTokens=0, m_requiredTokens=25, m_previousActor=master_clock, m_nextActor=imu_1)
+channel_list.append(c20)
+
+c21 = Channel(m_name = 'c21',m_divisor=1, m_numOfInitialTokens=1599, m_requiredTokens=1600, m_previousActor=master_clock, m_nextActor=LRF)
+channel_list.append(c21)
+
+c22 = Channel(m_name = 'c22',m_divisor=1, m_numOfInitialTokens=0, m_requiredTokens=160, m_previousActor=master_clock, m_nextActor=state_propagation)
+channel_list.append(c22)
+
 camera.nextChannel=[c1,c2]
-camera.previousChannel=c13
+camera.previousChannel=[c13,c18]
 
 base_frame.nextChannel=c3
 base_frame.previousChannel=c1
@@ -355,19 +399,21 @@ match_feature_landmarks.nextChannel=c8
 match_feature_landmarks.previousChannel=[c6,c7]
 
 extended_kalman_filter.nextChannel=c10
-extended_kalman_filter.previousChannel=[c8,c9,c11]
+extended_kalman_filter.previousChannel=[c8,c9,c11,c19]
 
 imu_1.nextChannel=[c9,c15]
-imu_1.previousChannel=c14
+imu_1.previousChannel=[c14,c20]
 
 mode_commander.nextChannel=[c13,c14,c16]
 mode_commander.previousChannel=c12
 
 LRF.nextChannel=[c11,c17]
-LRF.previousChannel=c16
+LRF.previousChannel=[c16,c21]
 
 state_propagation.nextChannel=c12
-state_propagation.previousChannel=[c10,c15,c17]
+state_propagation.previousChannel=[c10,c15,c17,c22]
+
+master_clock.nextChannel=[c18,c19,c20,c21,c22]
 
 myTimer = LogicTimer(m_tic=0.0125, m_t0 = 0)
 ##########################################################################
@@ -377,7 +423,7 @@ myTimer = LogicTimer(m_tic=0.0125, m_t0 = 0)
 decimalToInteger(channel_list)
 
 topologicMatrix = processTopologicMatrix(actors_list,channel_list)
-print("matrice topologique : \n",topologicMatrix)
+#print("matrice topologique : \n",topologicMatrix)
 repeatVector = processRepeatVector(topologicMatrix)
 print("vecteur de répétition :",repeatVector)
 
@@ -387,9 +433,9 @@ for i in channel_list:
 msToTic(actors_list,myTimer.tic)
 
 IsEnough = True #flag False if at least one of the following channels of an actor has not enough tokens to allow the next actor to fire
-for t in range(2000000):
+for t in range(20000):
     #allow an implementation where firing frequency of not timed actors is determined at compiler time and use period in nb tics
     implementationWithFiringFrequencyDeterminedAtCompilerTimeInteger(myTimer,actors_list,repeatVector)
-
-#chekFiring(actors_list)#debug function
+chekFiring(actors_list)#debug function
     
+print("number of time of master clock execution = ",master_clock.numOfFirings)

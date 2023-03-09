@@ -35,7 +35,7 @@ class LogicTimer:
                 #print("Activation of {} at {}ms".format(actor.name,self.__current_time_in_tic))
                 actor.produce()
                 actor.numOfFirings += 1 #increment the number of times the actor has been fired
-                actor.datesOfFirings.append(str(self.__current_time_in_tic)+'tic(s)') #add the date of firing to the firing's date list of the actor
+                actor.datesOfFirings.append(str(self.__current_time)+'tic(s)') #add the date of firing to the firing's date list of the actor
                 actor.numOfFiringsPerExecution += 1 #increment the number of times the actor has been fired during one execution of the graph
             else:
                 try: #try to see if there are more than one previous channel

@@ -32,7 +32,7 @@ class Channel:
         self.nextActor.produce()
         self.nextActor.consume()
         self.nextActor.numOfFirings += 1 #increment the number of times the actor has been fired
-        self.nextActor.datesOfFirings.append(str(t0)+'tic(s)') #add the date of firing to the firing's date list of the actor
+        self.nextActor.datesOfFirings.append(str(t0)+' tic(s)') #add the date of firing to the firing's date list of the actor
         self.nextActor.numOfFiringsPerExecution += 1 #increment the number of times the actor has been fired during one execution of the graph
 
     def checkTokens(self,t0):
@@ -47,7 +47,7 @@ class Channel:
                     isEnough = False
                     #print("Not enough tokens on {}".format(i.name))
                     if(i.nextActor.frequency>0):
-                        print("{} can't respect its firing frequency at {}tic(s) => liveliness not checked".format(i.nextActor.name,t0))
+                        print("{} can't respect its firing frequency at {} tic(s) => liveliness not checked".format(i.nextActor.name,t0))
                         print("There is a lack of {} tokens on {}".format(i.requiredTokens-i.numOfCurrentTokens,i.name))
                     
             if(isEnough):
@@ -59,7 +59,7 @@ class Channel:
             else:
                 #print("Not enough tokens on {}".format(self.name))
                 if(self.nextActor.frequency>0):
-                    print("{} can't respect its firing frequency at {}tic(s) => liveliness not checked".format(self.nextActor.name,t0))
+                    print("{} can't respect its firing frequency at {} tic(s) => liveliness not checked".format(self.nextActor.name,t0))
                     print("There is a lack of {} tokens on {}".format(self.requiredTokens-self.numOfCurrentTokens,self.name))
 
     def reduceToTheSameDevisor(self):

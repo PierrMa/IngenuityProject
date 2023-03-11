@@ -6,6 +6,7 @@ from channel import Channel
 from LogicTimer import LogicTimer
 import numpy as np
 from sympy import *
+from fractions import Fraction
 ##########################################################################
 #                               Functions
 ##########################################################################
@@ -179,7 +180,6 @@ def decimalToInteger(channels_list):
     """
         Function to allows the use of integer rather than decimal for tokens
         channels_list: channels list
-        actors_list: actors list
     """
     divisor_list=[]
     for i in channels_list:
@@ -194,15 +194,22 @@ def decimalToInteger(channels_list):
         multiplier_list.append(ppcm/i)
 
     multiplier_list=np.array(multiplier_list)
-    print(multiplier_list)
+    print("multiplier_list",multiplier_list)
     for index,channel in enumerate(channels_list):
         channel.multiplier = multiplier_list[index]
 
 def msToTic(actors_list,clock_period):
     for i in actors_list:
         if(i.frequency>0):
-            i.nbTic = (1000/i.frequency)/clock_period
-            i.delayInTic = i.delay/clock_period
+            #i.nbTic = np.ceil((1000/i.frequency)/clock_period)
+            fract1=(1000/i.frequency).as_integer_ratio()
+            fract2=(1/clock_period).as_integer_ratio()
+            i.nbTic=(fract1[0]*fract2[0])/(fract1[1]*fract2[1])
+            #print(i.name,i.nbTic)
+            #i.delayInTic = np.ceil(i.delay/clock_period)
+            fract3 = (i.delay).as_integer_ratio()
+            i.delayInTic = (fract3[0]*fract2[0])/(fract3[1]*fract2[1])
+            #print(i.name,i.delayInTic)
 
 def implementationWithFiringFrequencyDeterminedAtCompilerTimeInteger(myTimer,actors_list,repeatVector):
     """
@@ -377,7 +384,7 @@ myTimer = LogicTimer(m_tic=0.0125, m_t0 = 0)
 decimalToInteger(channel_list)
 
 topologicMatrix = processTopologicMatrix(actors_list,channel_list)
-print("matrice topologique : \n",topologicMatrix)
+#print("matrice topologique : \n",topologicMatrix)
 repeatVector = processRepeatVector(topologicMatrix)
 print("vecteur de répétition :",repeatVector)
 
@@ -387,9 +394,9 @@ for i in channel_list:
 msToTic(actors_list,myTimer.tic)
 
 IsEnough = True #flag False if at least one of the following channels of an actor has not enough tokens to allow the next actor to fire
-for t in range(2000000):
+for t in range(20000):
     #allow an implementation where firing frequency of not timed actors is determined at compiler time and use period in nb tics
     implementationWithFiringFrequencyDeterminedAtCompilerTimeInteger(myTimer,actors_list,repeatVector)
 
-#chekFiring(actors_list)#debug function
+chekFiring(actors_list)#debug function
     

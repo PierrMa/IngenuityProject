@@ -203,9 +203,15 @@ def decimalToInteger(channels_list):
 def msToTic(actors_list,clock_period):
     for i in actors_list:
         if(i.frequency>0):
-            i.nbTic = (1000/i.frequency)/clock_period
-        i.delayInTic = i.delay/clock_period
-            #print(i.nbTic,i.name)
+            #i.nbTic = np.ceil((1000/i.frequency)/clock_period)
+            fract1=(1000/i.frequency).as_integer_ratio()
+            fract2=(1/clock_period).as_integer_ratio()
+            i.nbTic=(fract1[0]*fract2[0])/(fract1[1]*fract2[1])
+            #print(i.name,i.nbTic)
+            #i.delayInTic = np.ceil(i.delay/clock_period)
+            fract3 = (i.delay).as_integer_ratio()
+            i.delayInTic = (fract3[0]*fract2[0])/(fract3[1]*fract2[1])
+            #print(i.name,i.delayInTic)
 
 def implementationWithFiringFrequencyDeterminedAtCompilerTimeInteger(myTimer,actors_list,repeatVector):
     """
@@ -217,30 +223,6 @@ def implementationWithFiringFrequencyDeterminedAtCompilerTimeInteger(myTimer,act
     current_time = myTimer.get_current_time() #get the current value of the logical clock
     #print("============================ T = {}tic(s) ============================= ".format(current_time))
     
-    """for index,actor in enumerate(actors_list):
-        if(actor.name==master_clock.name):
-            myTimer.wait(current_time,actor)
-        elif((actor.frequency>0)):# and (actor.numOfFiringsPerExecution<repeatVector[index])): #check if it is time to fired timed actors
-            if(actor.delayInTic>0 and (current_time>=actor.delayInTic)):
-                if((current_time-actor.delayInTic)%(actor.nbTic)==0):
-                    myTimer.wait(current_time,actor)
-            elif(actor.delay==0 ):
-                if((current_time)%(actor.nbTic)==0):
-                    myTimer.wait(current_time,actor)
-        elif (actor.frequency==0):
-            if(actor.delayInTic>0 and (current_time>=actor.delayInTic)):
-                #if(actor.numOfFiringsPerExecution<repeatVector[index]): #check is the actor has already been fired enough to complete an execution of the graph
-                myTimer.wait(current_time,actor)
-            elif(actor.delay==0 ):
-                #if(actor.numOfFiringsPerExecution<repeatVector[index]): #check is the actor has already been fired enough to complete an execution of the graph
-                myTimer.wait(current_time,actor)"""
-    """for actor in actors_list: 
-        if(actor.name=='master_clock'):
-            myTimer.wait(current_time,actor)
-        elif(actor.delayInTic>0 and (current_time>=actor.delayInTic)): 
-            myTimer.wait(current_time,actor)
-        elif(actor.delay==0 ): 
-            myTimer.wait(current_time,actor)"""
     for actor,repeatNumber in zip(actors_list,repeatVector): 
         if(actor.numOfFiringsPerExecution<repeatNumber):#check repeat vector
             if((actor.delayInTic>0) and (current_time>=actor.delayInTic)):#check delay
@@ -365,10 +347,10 @@ channel_list.append(c17)
 c18 = Channel(m_name = 'c18',m_divisor=1, m_numOfInitialTokens=3199, m_requiredTokens=3200, m_previousActor=master_clock, m_nextActor=camera)
 channel_list.append(c18)
 
-c19 = Channel(m_name = 'c19',m_divisor=1, m_numOfInitialTokens=0, m_requiredTokens=160, m_previousActor=master_clock, m_nextActor=extended_kalman_filter)
+c19 = Channel(m_name = 'c19',m_divisor=1, m_numOfInitialTokens=80, m_requiredTokens=160, m_previousActor=master_clock, m_nextActor=extended_kalman_filter)
 channel_list.append(c19)
 
-c20 = Channel(m_name = 'c20',m_divisor=1, m_numOfInitialTokens=0, m_requiredTokens=25, m_previousActor=master_clock, m_nextActor=imu_1)
+c20 = Channel(m_name = 'c20',m_divisor=1, m_numOfInitialTokens=5, m_requiredTokens=25, m_previousActor=master_clock, m_nextActor=imu_1)
 channel_list.append(c20)
 
 c21 = Channel(m_name = 'c21',m_divisor=1, m_numOfInitialTokens=1599, m_requiredTokens=1600, m_previousActor=master_clock, m_nextActor=LRF)

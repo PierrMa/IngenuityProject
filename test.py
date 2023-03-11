@@ -149,8 +149,13 @@ def implementationWithFiringFrequencyDeterminedAtCompilerTime(myTimer,actors_lis
     #print("============================ T = {}ms ============================= ".format(current_time))
     
     for index,actor in enumerate(actors_list):
-        if((actor.frequency>0) and ((current_time)%(1000/actor.frequency)==0)): #check if it is time to fired timed actors
-            myTimer.wait(current_time,actor)
+        if((actor.frequency>0)): #check if it is time to fired timed actors
+            if(actor.delay>0 and (current_time>=actor.delay)):
+                if((current_time-actor.delay)%(1000/actor.frequency)==0):
+                    myTimer.wait(current_time,actor)
+            elif(actor.delay==0 ):
+                if((current_time)%(1000/actor.frequency)==0):
+                    myTimer.wait(current_time,actor)
         elif (actor.frequency==0):
             if(actor.numOfFiringsPerExecution<repeatVector[index]): #check is the actor has already been fired enough to complete an execution of the graph
                 myTimer.wait(current_time,actor)
@@ -178,11 +183,11 @@ a1 = Actor(m_name = 'A', m_consummedToken=0,m_producedToken=[3,2],m_frequency=0,
 actors_list.append(a1)
 a2 = Actor(m_name = 'B',m_consummedToken=4,m_producedToken=3,m_frequency=0,m_nextChannel=None,m_previousChannel=None)
 actors_list.append(a2)
-a3 = Actor(m_name = 'C',m_consummedToken=[2,1],m_producedToken=1,m_frequency=20,m_nextChannel=None,m_previousChannel=None)
+a3 = Actor(m_name = 'C',m_consummedToken=[2,1],m_producedToken=1,m_frequency=20,m_nextChannel=None,m_previousChannel=None,m_delay=50)
 actors_list.append(a3)
 a4 = Actor(m_name = 'D',m_consummedToken=[2,1],m_producedToken=[1,1],m_frequency=0,m_nextChannel=None,m_previousChannel=None)
 actors_list.append(a4)
-a5 = Actor(m_name = 'E',m_consummedToken=1,m_producedToken=0,m_frequency=10,m_nextChannel=None,m_previousChannel=None)
+a5 = Actor(m_name = 'E',m_consummedToken=1,m_producedToken=0,m_frequency=10,m_nextChannel=None,m_previousChannel=None,m_delay=100)
 actors_list.append(a5)
 
 #channels
@@ -197,7 +202,7 @@ c4 = Channel(m_name = 'c4',m_divisor=1, m_numOfInitialTokens=0, m_requiredTokens
 channel_list.append(c4)
 c5 = Channel(m_name = 'c5',m_divisor=1, m_numOfInitialTokens=1, m_requiredTokens=1, m_previousActor=a4, m_nextActor=a4)
 channel_list.append(c5)
-c6 = Channel(m_name = 'c6',m_divisor=1, m_numOfInitialTokens=0, m_requiredTokens=1, m_previousActor=a4, m_nextActor=a5)
+c6 = Channel(m_name = 'c6',m_divisor=1, m_numOfInitialTokens=1, m_requiredTokens=1, m_previousActor=a4, m_nextActor=a5)
 channel_list.append(c6)
 
 a1.nextChannel = [c1,c2]

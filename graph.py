@@ -153,7 +153,7 @@ def implementationWithFiringFrequencyDeterminedAtCompilerTime(myTimer,actors_lis
     #print("============================ T = {}ms ============================= ".format(current_time))
     
     for index,actor in enumerate(actors_list):
-        if((actor.frequency>0) and (actor.numOfFiringsPerExecution<repeatVector[index])): #check if it is time to fired timed actors
+        if((actor.frequency>0)): #check if it is time to fired timed actors
             if(actor.delay>0 and (current_time>=actor.delay)):
                 if((current_time-actor.delay)%(1000/actor.frequency)==0):
                     myTimer.wait(current_time,actor)

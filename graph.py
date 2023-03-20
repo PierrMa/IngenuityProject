@@ -201,8 +201,8 @@ def implementationWithFiringFrequencyDeterminedAtCompilerTimeInteger(myTimer,act
     #print("============================ T = {}tic(s) ============================= ".format(current_time))
     
     #fault injection
-    faultInjectionList = [[c1,1,1],[c2,1,-10],[c3,2,15]]
-    faultInjection(current_time,channel_list,faultInjectionList)
+    #faultInjectionList = [[c1,1,1],[c2,1,-10],[c3,2,15]]
+    #faultInjection(current_time,channel_list,faultInjectionList)
 
     for actor in actors_list: 
         if(actor.frequency>0):
@@ -220,6 +220,39 @@ def implementationWithFiringFrequencyDeterminedAtCompilerTimeInteger(myTimer,act
 
     myTimer.do_task(current_time)#fire the actors if it is possible
     myTimer.run() #add one period to the logical clock
+
+def processMinimalClockPeriod(frequencyList,delayList):
+    timeList = []#list to contain all the periods
+    #convert frequency in period
+    for i in frequencyList:
+        fraction = i.as_integer_ratio()
+        timeList.append(fraction[1]*1000/fraction[0])
+    
+    for i in delayList:
+        timeList.append(i)
+    #print(timeList)
+
+    areAllInteger = True
+    #convert all the values of timeList into integer
+    for i in timeList:
+        if i != int(i):
+            areAllInteger = False
+    n=1
+    while(not areAllInteger):
+        areAllInteger = True
+        n*=10
+        for i in timeList:
+            i = i.as_integer_ratio()
+            if (i[0]/i[1])*n != int((i[0]/i[1])*n):
+                areAllInteger = False
+    timeList = np.array(timeList)
+    for i in range(len(timeList)):
+        timeList[i]=timeList[i]*n
+    timeList = np.array(timeList, dtype=int)
+    #print(timeList)
+    
+    pgcd = np.gcd.reduce(timeList)
+    return pgcd/n
 
 ##########################################################################
 #                               Variables
@@ -372,7 +405,16 @@ state_propagation.previousChannel=[c10,c15,c17,c22]
 
 master_clock.nextChannel=[c18,c19,c20,c21,c22]
 
-myTimer = LogicTimer(m_tic=0.0125, m_t0 = 0)
+frequencyList = []
+delayList = []
+for i in actors_list:
+    if i.frequency>0:
+        frequencyList.append(i.frequency)
+    if i.delay>0:
+        delayList.append(i.delay)
+minimalPeriod = processMinimalClockPeriod(frequencyList,delayList)
+
+myTimer = LogicTimer(m_tic=minimalPeriod, m_t0 = 0)
 ##########################################################################
 #                               main program
 ########################################################################## 
@@ -381,8 +423,8 @@ decimalToInteger(channel_list)
 
 topologicMatrix = processTopologicMatrix(actors_list,channel_list)
 #print("matrice topologique : \n",topologicMatrix)
-#repeatVector = processRepeatVector(topologicMatrix)
-repeatVector = [5,1,4,1,4,1,4,100,640,100,10,100,16000]
+repeatVector = processRepeatVector(topologicMatrix)
+#repeatVector = [5,1,4,1,4,1,4,100,640,100,10,100,16000]
 #print("vecteur de répétition :",repeatVector)
 
 for i in channel_list:

@@ -108,6 +108,8 @@ def checkConsistency(actors_list,repeatVector,channel_list):
 
     while(not isCompleted):
         current_time = myTimer.get_current_time() #get the current value of the logical clock
+        #faultInjectionList = [[c1,2001,1],[c2,2010,-10],[c3,2020,15]]
+        #faultInjection(current_time,channel_list,faultInjectionList)
         for actor,repeatNumber in zip(actors_list,repeatVector): 
             if(actor.numOfFiringsPerExecution < repeatNumber): 
                 #print(actor.name,actor.numOfFiringsPerExecution,)
@@ -176,6 +178,19 @@ def msToTic(actors_list,clock_period):
             i.delayInTic = (fract3[0]*fract2[0])/(fract3[1]*fract2[1])
             #print(i.name,i.delayInTic)
 
+def faultInjection(currentTime,channel_list,faultInjectionList):
+    """
+        fontion to add or delete tokens on some channels
+        currentTime : actual date
+        channel_list : list of the channels of the graph
+        faultInjection : list of tuples with in first index the channel on which add/delete tokens, in second index the date of the fault injection, in 3rd position the numbre of tokens to add/delete
+    """
+    for channel in channel_list:
+        for fault in faultInjectionList:
+            if(channel == fault[0]): #check if the current channel match with one of the channels where we have to add fault
+                if(currentTime == fault[1] ): #check the date to add the fault
+                    channel.numOfCurrentTokens += fault[2]
+
 def implementationWithFiringFrequencyDeterminedAtCompilerTimeInteger(myTimer,actors_list):
     """
         function to fire actors regarding a frequency determined at compiler time for each actor
@@ -185,6 +200,10 @@ def implementationWithFiringFrequencyDeterminedAtCompilerTimeInteger(myTimer,act
     current_time = myTimer.get_current_time() #get the current value of the logical clock
     #print("============================ T = {}tic(s) ============================= ".format(current_time))
     
+    #fault injection
+    faultInjectionList = [[c1,1,1],[c2,1,-10],[c3,2,15]]
+    faultInjection(current_time,channel_list,faultInjectionList)
+
     for actor in actors_list: 
         if(actor.frequency>0):
             if((actor.delayInTic>0) and (current_time>=actor.delayInTic)):#check delay
@@ -201,7 +220,7 @@ def implementationWithFiringFrequencyDeterminedAtCompilerTimeInteger(myTimer,act
 
     myTimer.do_task(current_time)#fire the actors if it is possible
     myTimer.run() #add one period to the logical clock
-        
+
 ##########################################################################
 #                               Variables
 ##########################################################################
@@ -362,8 +381,9 @@ decimalToInteger(channel_list)
 
 topologicMatrix = processTopologicMatrix(actors_list,channel_list)
 #print("matrice topologique : \n",topologicMatrix)
-repeatVector = processRepeatVector(topologicMatrix)
-print("vecteur de répétition :",repeatVector)
+#repeatVector = processRepeatVector(topologicMatrix)
+repeatVector = [5,1,4,1,4,1,4,100,640,100,10,100,16000]
+#print("vecteur de répétition :",repeatVector)
 
 for i in channel_list:
     i.reduceToTheSameDevisor()
@@ -374,6 +394,7 @@ IsEnough = True #flag False if at least one of the following channels of an acto
 for t in range(20000):
     #allow an implementation where firing frequency of not timed actors is determined at compiler time and use period in nb tics
     implementationWithFiringFrequencyDeterminedAtCompilerTimeInteger(myTimer,actors_list)
+
 chekFiring(actors_list)#debug function
     
 print("number of time of master clock execution = ",master_clock.numOfFirings)
